@@ -47,7 +47,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
             ],
             'codigo',
             'telefono',
-            'correo',
+            //'correo',
             [
                 'attribute' => 'fk_carrera',
                 'label' => 'Carrera',
@@ -64,6 +64,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                     ]
                 ),
             ],
+            'numero_materias',
+
             [
                 'attribute' => 'fk_estado_alumno',
                 'label' => 'Estado',
@@ -72,7 +74,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                 },
                 'filter' => ArrayHelper::map(TblEstadoAlumno::find()->all(), 'id_estado_alumno', 'estado_alumno')
             ],
-            //'numero_materias',
+            'create_at',
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, TblAlumno $model, $key, $index, $column) {

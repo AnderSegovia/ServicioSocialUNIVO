@@ -82,14 +82,14 @@ class TblAlumno extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id_alumno' => 'Id Alumno',
+            'id_alumno' => 'Id',
             'nombre_alumno' => 'Nombre Alumno',
             'codigo' => 'Codigo',
             'telefono' => 'Telefono',
             'correo' => 'Correo',
             'fk_carrera' => 'Carrera',
-            'fk_estado_alumno' => 'Estado Alumno',
-            'numero_materias' => 'Materias Probadas',
+            'fk_estado_alumno' => 'Estado',
+            'numero_materias' => 'Materias',
         ];
     }
 

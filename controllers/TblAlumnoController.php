@@ -5,6 +5,16 @@ namespace app\controllers;
 use app\models\TblAlumno;
 use app\models\TblAlumnoSearch;
 use app\models\TblExpediente;
+
+use app\models\TblDepartamentos;
+use app\models\TblDias;
+use app\models\TblDistritos;
+use app\models\TblF1;
+use app\models\TblF1Search;
+use app\models\TblMunicipios;
+use app\models\TblPivotef1;
+use app\models\TblTurnos;
+
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -13,7 +23,7 @@ use yii\filters\VerbFilter;
  * TblAlumnoController implements the CRUD actions for TblAlumno model.
  */
 class TblAlumnoController extends BaseController
-{
+{ 
     /**
      * @inheritDoc
      */
@@ -66,20 +76,35 @@ class TblAlumnoController extends BaseController
     public function actionView($id_alumno)
     {
         $expedientes = TblExpediente::find()
-        ->where(['fk_alumnoExpediente' => $id_alumno])
-        ->all();
-
-    // Organiza los expedientes por tipo
-    $expedientesPorTipo = [];
-    foreach ($expedientes as $expediente) {
-        $expedientesPorTipo[$expediente->fk_tipoExpediente][] = $expediente;
-    }
-
+            ->where(['fk_alumnoExpediente' => $id_alumno])
+            ->all();
+    
+        // Organiza los expedientes por tipo
+        $expedientesPorTipo = [];
+        foreach ($expedientes as $expediente) {
+            $expedientesPorTipo[$expediente->fk_tipoExpediente][] = $expediente;
+        }
+    
+        // Obtener el modelo de TblF1 relacionado con el alumno
+        $f1Model = TblF1::find()
+            ->where(['fk_alumnof1' => $id_alumno])
+            ->one(); // Cambia column() por one() para obtener el objeto completo
+    
+        $pivotRecords = [];
+        if ($f1Model) {
+            $pivotRecords = TblPivotef1::find()
+                ->where(['fk_f1' => $f1Model->id_f1])
+                ->all();
+        }
+    
         return $this->render('view', [
             'model' => $this->findModel($id_alumno),
             'expedientesPorTipo' => $expedientesPorTipo,
+            'f1Model' => $f1Model, // Enviar el modelo a la vista
+            'pivotRecords' => $pivotRecords,
         ]);
     }
+    
 
     /**
      * Creates a new TblAlumno model.
