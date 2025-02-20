@@ -8,6 +8,7 @@ use app\models\TblAlumno;
 use app\models\TblArchivos;
 use app\models\TblExpediente;
 use app\models\TblInstituciones;
+use app\models\TblCargos;
 use app\models\TblPivote;
 use app\models\TblProyecto;
 use app\models\UploadForm;
@@ -120,7 +121,7 @@ class CartaController extends BaseController
     }
     private function formatInstitutionName($name) {
         $lowercaseWords = ['la', 'los', 'que', 'lo', 'de', 'del', 'al', 'y', 'a', 'el', 'las', 'en', 'con', 'por', 'para'];
-        $exceptions = ['El Salvador','La Unión','SOS','La Trinidad','USAID','El Niño','ADESCO','El Milagro','UNIVO','INN','El Rosario','Las Marias','El Zamorán','ES0867','FULSAMO','ES0841','La Sincuya','S.A','C.V']; // Lista de excepciones
+        $exceptions = ['El Salvador','FUNDAGEO','La Unión','SOS','La Trinidad','USAID','El Niño','ADESCO','El Milagro','UNIVO','INN','El Rosario','Las Marias','El Zamorán','ES0867','FULSAMO','ES0841','La Sincuya','S.A','C.V']; // Lista de excepciones
         $exceptionPlaceholders = [];
     
         // Paso 1: Reemplazar excepciones con marcadores únicos
@@ -304,6 +305,11 @@ class CartaController extends BaseController
                 $pdfFiles = [];
                 $combinedPdfFilePath = $pdfDir . 'Constancia-Solvencia.pdf';
 
+                $director = TblCargos::findOne(1);
+                $coordinador = TblCargos::findOne(2);
+                $colaborador = TblCargos::findOne(3);
+
+
                 $institucion = TblInstituciones::findOne($idInstitucion);
                 if (!$institucion) {
                     throw new \Exception('Institución no encontrada: ' . $idInstitucion);
@@ -343,9 +349,6 @@ class CartaController extends BaseController
                 $formattedFromDate = $this->formatCustomDate($fromDate, $dateFormatterForFromDate);
                 $formattedToDate = $this->formatCustomDate($toDate, $dateFormatterFull);
 
-
-
-                
                 $fromDate2 = isset($datosAdicionales['from_date2']) ? new \DateTime($datosAdicionales['from_date2']) : null;
                 $toDate2 = isset($datosAdicionales['to_date2']) ? new \DateTime($datosAdicionales['to_date2']) : null;
 
@@ -382,7 +385,10 @@ class CartaController extends BaseController
                         'institucion2' => $institucion2,
                         'datosAdicionales' => $datosAdicionales,
                         'actividades' => $actividades,
-                        'actividades2' => $actividades2
+                        'actividades2' => $actividades2,
+                        'director' => $director,
+                        'coordinador' => $coordinador,
+                        'colaborador' => $colaborador
                     ];
 
                     

@@ -181,13 +181,13 @@
     <div class='firmas'>
         <table>
             <tr>
-                <td>
-                    <p>MDE. Ángel Leonel Rivera Salmerón</p>
-                    <p>Director de Vinculación Social</p>
+            <td>
+                    <p><?= $director['nombre'] ?></p>
+                    <p><?= $director['cargo'] ?></p>
                 </td>
                 <td>
-                    <p>Licda. Iris Gabriela Villatoro Elías</p>
-                    <p>Coordinadora de Servicio Social</p>
+                <p><?= $coordinador['nombre'] ?></p>
+                <p><?= $coordinador['cargo'] ?></p>
                 </td>
             </tr>
         </table>

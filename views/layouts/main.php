@@ -53,7 +53,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             ['label' => 'Arhivos', 'url' => ['/carta/index']],
             ['label' => 'Expedientes', 'url' => ['/tbl-expediente/index']],
             ['label' => 'Instituciones', 'url' => ['/tbl-instituciones/index']],
-            ['label' => 'Lineas de Accion', 'url' => ['/tbl-actividad/index']],
+            ['label' => 'Cargos', 'url' => ['/tbl-cargos/index']],
+
 
             Yii::$app->user->isGuest
                 ? ['label' => 'Login', 'url' => ['/site/login']]

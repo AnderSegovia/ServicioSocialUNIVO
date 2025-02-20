@@ -88,9 +88,9 @@
     <div class="firmas">
         <table>
             <tr>
-                <td>
-                    <p>MDE. Ángel Leonel Rivera Salmerón</p>
-                    <p>Director de Vinculación Social</p>
+            <td>
+                    <p><?= $director['nombre'] ?></p>
+                    <p><?= $director['cargo'] ?></p>
                 </td>
             </tr>
         </table>

@@ -179,12 +179,12 @@
         <table>
             <tr>
                 <td>
-                    <p>MDE. Ángel Leonel Rivera Salmerón</p>
-                    <p>Director de Vinculación Social</p>
+                    <p><?= $director['nombre'] ?></p>
+                    <p><?= $director['cargo'] ?></p>
                 </td>
                 <td>
-                    <p>Licda. Iris Gabriela Villatoro Elías</p>
-                    <p>Coordinadora de Servicio Social</p>
+                <p><?= $coordinador['nombre'] ?></p>
+                <p><?= $coordinador['cargo'] ?></p>
                 </td>
             </tr>
         </table>
@@ -196,7 +196,7 @@
         echo "<br>";
     }
     ?>
-        <p style="font-size: 10pt;">AC.</p>
+        <p style="font-size: 10pt;"><?= $colaborador['nombre'] ?></p>
     </div>
     
 </body>
