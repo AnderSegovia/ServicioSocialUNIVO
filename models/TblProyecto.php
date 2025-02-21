@@ -19,6 +19,7 @@ use Yii;
  * @property int $fk_estado_proyecto
  * @property int $fk_institucion
  * @property int $fk_impacto
+ * @property string $create_at
  *
  * @property TblCarrera $fkCarreraProyecto
  * @property TblEstadoProyecto $fkEstadoProyecto
@@ -44,7 +45,7 @@ class TblProyecto extends \yii\db\ActiveRecord
     {
         return [
             [['nombre_proyecto'], 'required'],
-            [['fecha_inicio', 'fecha_fin'], 'safe'],
+            [['fecha_inicio', 'fecha_fin','create_at'], 'safe'],
             [['cant_beneficiados', 'fk_carrera_proyecto', 'fk_estado_proyecto', 'fk_institucion', 'fk_impacto'], 'integer'],
             [['cant_inversion'], 'number'],
             [['nombre_proyecto'], 'string', 'max' => 255],
@@ -54,6 +55,7 @@ class TblProyecto extends \yii\db\ActiveRecord
             [['fk_estado_proyecto'], 'exist', 'skipOnError' => true, 'targetClass' => TblEstadoProyecto::class, 'targetAttribute' => ['fk_estado_proyecto' => 'id_estado_proyecto']],
             [['fk_impacto'], 'exist', 'skipOnError' => true, 'targetClass' => TblImpacto::class, 'targetAttribute' => ['fk_impacto' => 'id_impacto']],
             [['fk_institucion'], 'exist', 'skipOnError' => true, 'targetClass' => TblInstituciones::class, 'targetAttribute' => ['fk_institucion' => 'id_institucion']],
+            
         ];
     }
 
@@ -75,6 +77,7 @@ class TblProyecto extends \yii\db\ActiveRecord
             'fk_estado_proyecto' => 'Estado Proyecto',
             'fk_institucion' => 'Institucion',
             'fk_impacto' => 'Impacto',
+            'create_at' => 'Create At',
         ];
     }
 

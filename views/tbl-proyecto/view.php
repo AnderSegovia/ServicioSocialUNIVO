@@ -44,6 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'horario',
                         'fecha_inicio:date',
                         'fecha_fin:date',
+                        'create_at',
                     ],
                 ]) ?>
             </div>
