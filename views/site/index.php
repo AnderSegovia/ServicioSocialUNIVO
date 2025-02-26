@@ -36,9 +36,9 @@ $this->title = 'Servicio Social UNIVO';
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm card-custom">
                     <div class="card-body">
-                        <h5 class="card-title text-center">Alumnos</h5>
-                        <p class="card-text">Ver toda la lista de Estudiantes en Servicio Social</p>
-                        <?= Html::a('Go', ['tbl-alumno/index'], ['class' => 'btn btn-primary stretched-link']) ?>
+                        <h5 class="card-title text-center">Names</h5>
+                        <p class="card-text">CRUD de la db con nombres y apellidos con tildes a considerar al momento de hacer constancias.</p>
+                        <?= Html::a('Go', ['tbl-names/index'], ['class' => 'btn btn-primary stretched-link']) ?>
                     </div>
                 </div>
             </div>
@@ -72,9 +72,9 @@ $this->title = 'Servicio Social UNIVO';
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm card-custom">
                     <div class="card-body">
-                        <h5 class="card-title text-center">Instituciones</h5>
-                        <p class="card-text">Lista completa de instituciones con la que se realizan proyectos.</p>
-                        <?= Html::a('Go', ['tbl-instituciones/index'], ['class' => 'btn btn-primary stretched-link']) ?>
+                        <h5 class="card-title text-center">Cargos</h5>
+                        <p class="card-text">CRUD de los datos de las personas de encargadas firmar las constancias de SS.</p>
+                        <?= Html::a('Go', ['tbl-cargos/index'], ['class' => 'btn btn-primary stretched-link']) ?>
                     </div>
                 </div>
             </div>

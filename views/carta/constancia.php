@@ -96,7 +96,7 @@
 <br>
 
 
-    <p><?= $genero == 1 ? 'La' : 'El' ?> <?= $titulo ?> <strong><?= mb_strtoupper($alumno->nombre_alumno, 'UTF-8') ?></strong> con código <strong><?= $alumno->codigo ?></strong> <?= $genero == 1 ? 'inscrita' : 'inscrito' ?> en la carrera de <strong><?= mb_strtoupper($alumno->fkCarrera->nombre_carrera, 'UTF-8') ?></strong> de la <strong><?= mb_strtoupper($alumno->fkCarrera->fkFacultad->nombre_facultad, 'UTF-8') ?></strong> de la <strong>UNIVERSIDAD DE ORIENTE,</strong>
+    <p><?= $genero == 1 ? 'La' : 'El' ?> <?= $titulo ?> <strong><?= mb_strtoupper($nombreFormateadoEstudiante, 'UTF-8') ?></strong> con código <strong><?= $alumno->codigo ?></strong> <?= $genero == 1 ? 'inscrita' : 'inscrito' ?> en la carrera de <strong><?= mb_strtoupper($alumno->fkCarrera->nombre_carrera, 'UTF-8') ?></strong> de la <strong><?= mb_strtoupper($alumno->fkCarrera->fkFacultad->nombre_facultad, 'UTF-8') ?></strong> de la <strong>UNIVERSIDAD DE ORIENTE,</strong>
     <?php
     if($datosAdicionales['tipo']==3){
     ?> con base en el artículo 18 literal “C” del Reglamento de Servicio Social de la Universidad de Oriente, que literalmente establece que: “Los graduados de la Universidad de Oriente y otras Instituciones de Educación Superior que realicen plan complementario o segunda carrera realizarán doscientas horas sociales”, ha cumplido satisfactoriamente con el Servicio Social requerido según el Reglamento de la Universidad de Oriente.

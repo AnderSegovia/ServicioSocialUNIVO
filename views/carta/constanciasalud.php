@@ -86,7 +86,7 @@
     <div class='content' style='padding-top: 1.5cm; '>
     <p>EL SUSCRITO DIRECTOR DE VINCULACIÓN SOCIAL DE LA UNIVERSIDAD DE ORIENTE, CERTIFICA QUE:</p>           
     <br> <br>
-    <p><?= $genero == 1 ? 'La' : 'El' ?> <?= $titulo ?> <strong><?= mb_strtoupper($alumno->nombre_alumno, 'UTF-8') ?></strong> con código <strong><?= $alumno->codigo ?></strong> <?= $genero == 1 ? 'inscrita' : 'inscrito' ?> en la carrera de <strong><?= mb_strtoupper($alumno->fkCarrera->nombre_carrera, 'UTF-8') ?></strong> de la <strong><?= mb_strtoupper($alumno->fkCarrera->fkFacultad->nombre_facultad, 'UTF-8') ?></strong> de la <strong>UNIVERSIDAD DE ORIENTE,</strong> ha cumplido satisfactoriamente con el Servicio Social requerido según el Reglamento de la Universidad de Oriente desarrollado en <?= $nombreFormateado ?>. En el período comprendido del <?= $fromDate ?> al <?= $toDate ?>.</p>
+    <p><?= $genero == 1 ? 'La' : 'El' ?> <?= $titulo ?> <strong><?= mb_strtoupper($nombreFormateadoEstudiante, 'UTF-8') ?></strong> con código <strong><?= $alumno->codigo ?></strong> <?= $genero == 1 ? 'inscrita' : 'inscrito' ?> en la carrera de <strong><?= mb_strtoupper($alumno->fkCarrera->nombre_carrera, 'UTF-8') ?></strong> de la <strong><?= mb_strtoupper($alumno->fkCarrera->fkFacultad->nombre_facultad, 'UTF-8') ?></strong> de la <strong>UNIVERSIDAD DE ORIENTE,</strong> ha cumplido satisfactoriamente con el Servicio Social requerido según el Reglamento de la Universidad de Oriente desarrollado en <?= $nombreFormateado ?>. En el período comprendido del <?= $fromDate ?> al <?= $toDate ?>.</p>
     <br>         <br>
         <p>Y para efectos de graduación, se extiende, firma y sella la presente en la ciudad de San Miguel, <?= $fecha ?>.</p> 
     </div>

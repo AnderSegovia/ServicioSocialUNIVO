@@ -6,6 +6,7 @@ use yii\web\Controller;
 use Mpdf\Mpdf;
 use app\models\TblAlumno;
 use app\models\TblArchivos;
+use app\models\TblNames;
 use app\models\TblExpediente;
 use app\models\TblInstituciones;
 use app\models\TblCargos;
@@ -369,8 +370,26 @@ class CartaController extends BaseController
                     $alumno = TblAlumno::findOne($estudiante['id']);
                     if (!$alumno) {
                         throw new \Exception('Estudiante no encontrado: ' . $estudiante['id']);
-                    }    
-                    $data = [
+                    }                        
+                // Variable para rastrear si hubo cambios
+                $cambioRealizado = false;
+
+                // Formatear el nombre del alumno y verificar si hubo cambios
+                $nombreFormateadoEstudiante = $this->formatearNombre($alumno->nombre_alumno, $cambioRealizado);
+
+                // Si hubo cambios, actualizar el nombre en la base de datos
+                if ($cambioRealizado) {
+                    $alumno->nombre_alumno = $nombreFormateadoEstudiante;
+                    if (!$alumno->save()) {
+                        throw new \Exception('Error al actualizar el nombre del alumno: ' . json_encode($alumno->errors));
+                    }
+
+                    // Mensaje de depuración
+                    Yii::debug("Nombre del estudiante actualizado: " . $nombreFormateadoEstudiante);
+                } else {
+                    // Mensaje de depuración si no hubo cambios
+                    Yii::debug("No se realizaron cambios en el nombre del estudiante: " . $alumno->nombre_alumno);
+                }                    $data = [
                         'fecha' => $fecha,
                         'fromDate' => $formattedFromDate,
                         'toDate' => $formattedToDate,
@@ -388,7 +407,8 @@ class CartaController extends BaseController
                         'actividades2' => $actividades2,
                         'director' => $director,
                         'coordinador' => $coordinador,
-                        'colaborador' => $colaborador
+                        'colaborador' => $colaborador,
+                        'nombreFormateadoEstudiante' => $nombreFormateadoEstudiante
                     ];
 
                     
@@ -562,5 +582,42 @@ class CartaController extends BaseController
             }
         }
         return json_encode(['success' => false]);
+    }
+    public function formatearNombre($nombreCompleto, &$cambioRealizado = false) {
+        // Obtener todas las correcciones de la base de datos
+        $correcciones = TblNames::find()->all();
+    
+        // Dividir el nombre completo en partes individuales (nombres y apellidos)
+        $partesNombre = explode(' ', $nombreCompleto);
+    
+        // Variable para rastrear si se realizó algún cambio
+        $cambioRealizado = false;
+    
+        // Recorrer cada parte del nombre y aplicar correcciones
+        foreach ($partesNombre as &$parte) {
+            // Eliminar el punto al final del nombre (si existe)
+            $parte = rtrim($parte, '.');
+    
+            // Guardar la parte original para comparar después
+            $parteOriginal = $parte;
+    
+            // Comparar la parte del nombre con la versión sin tildes (baseform)
+            foreach ($correcciones as $correccion) {
+                if (mb_strtolower($parte) === mb_strtolower($correccion->baseform)) {
+                    // Reemplazar con la versión con tildes (accentsnames)
+                    $parte = $correccion->accentsnames;
+                    // Si la parte cambió, marcar que hubo un cambio
+                    if ($parte !== $parteOriginal) {
+                        $cambioRealizado = true;
+                    }
+                    break; // Si encontramos una coincidencia, salimos del bucle
+                }
+            }
+        }
+    
+        // Unir las partes corregidas para formar el nombre completo
+        $nombreCorregido = implode(' ', $partesNombre);
+    
+        return $nombreCorregido;
     }
 }
