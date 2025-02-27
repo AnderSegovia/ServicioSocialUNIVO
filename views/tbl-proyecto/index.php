@@ -117,7 +117,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                         ]   
                     ),
                 ],
-                [
+         /*       [
                 'attribute' => 'fk_lineamiento',
                 'label' => 'Linea',
                 'value' => function ($model) {
@@ -126,7 +126,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                         : 'No definido';
                 },
                 'filter' => ArrayHelper::map(TblLineamiento::find()->all(), 'id_lineamiento', 'nombre_lineamiento'),
-            ],
+            ],*/
             [
                 'attribute' => 'fk_actividad',
                 'label' => 'Actividad',
