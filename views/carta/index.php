@@ -187,7 +187,7 @@ $form = ActiveForm::begin([
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-document.getElementById('btn-agregar').addEventListener('click', function() {
+ document.getElementById('btn-agregar').addEventListener('click', function() {
     // Crear un contenedor para los inputs
     var inputGroup = document.createElement('div');
     inputGroup.className = 'input-group'; // Añadir la clase 'input-group' para seleccionar fácilmente
@@ -214,7 +214,7 @@ document.getElementById('btn-agregar').addEventListener('click', function() {
 
     // Agregar el contenedor de inputs al contenedor principal
     document.getElementById('input-container').appendChild(inputGroup);
-});
+ });
     document.getElementById('btn-agregar2').addEventListener('click', function() {
         // Crear un contenedor para los inputs
         var inputGroup = document.createElement('div');
@@ -243,7 +243,7 @@ document.getElementById('btn-agregar').addEventListener('click', function() {
         // Agregar el contenedor de inputs al contenedor principal
         document.getElementById('input-container2').appendChild(inputGroup);
     });
-$(document).ready(function() {
+ $(document).ready(function() {
     $('#btn-abrir-modal').on('click', function() {
         $('#modalDatosAdicionales').modal('show');
     });
@@ -327,7 +327,7 @@ $(document).ready(function() {
             }
         });
     });
-});
+ });
 
     $(document).ready(function() {
         $('#tipo').change(function() {
@@ -342,13 +342,23 @@ $(document).ready(function() {
 
 </script>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let estudiantesSeleccionados = {};
-    let carreraSeleccionada = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        let estudiantesSeleccionados = {};
+        let carreraSeleccionada = null;
 
-    new TomSelect('.tom-select-carrera', {
+        new TomSelect('.tom-select-carrera', {
+            create: false,
+            sortField: {
+                field: 'text',
+                direction: 'asc'
+            },
+            searchField: ['text'],
+            plugins: ['remove_button'],
+            dropdownParent: 'body',
+        });
+
+        var tomSelectInstance = new TomSelect('.tom-select-institucion', {
         create: false,
         sortField: {
             field: 'text',
@@ -358,17 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
         plugins: ['remove_button'],
         dropdownParent: 'body',
     });
-
-    var tomSelectInstance = new TomSelect('.tom-select-institucion', {
-    create: false,
-    sortField: {
-        field: 'text',
-        direction: 'asc'
-    },
-    searchField: ['text'],
-    plugins: ['remove_button'],
-    dropdownParent: 'body',
-});
     var tomSelectInstance2 = new TomSelect('.tom-select-institucions', {
         create: false,
         sortField: {
@@ -381,51 +380,51 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     //Funcion para verificar que no se dejen datos vacios
-function toggleButtons() {
-    let valorCampoNumerico = $('#campo-numerico').val();
-    let institucionSeleccionada = $('.tom-select-institucion').val();
+    function toggleButtons() {
+        let valorCampoNumerico = $('#campo-numerico').val();
+        let institucionSeleccionada = $('.tom-select-institucion').val();
 
-    let allStudentsSelected = true;
-    let studentCount = 0;
+        let allStudentsSelected = true;
+        let studentCount = 0;
 
-    $('#tabla-estudiantes tbody tr').each(function() {
-        let genderSelected = $(this).find('select[name="gender"]').val();
-        if (!genderSelected) {
-            allStudentsSelected = false;
+        $('#tabla-estudiantes tbody tr').each(function() {
+            let genderSelected = $(this).find('select[name="gender"]').val();
+            if (!genderSelected) {
+                allStudentsSelected = false;
+            }
+            studentCount++;
+        });
+
+        let hasStudents = studentCount > 0;
+
+        if (institucionSeleccionada && allStudentsSelected && hasStudents) {
+            $('#btn-abrir-modal').prop('disabled', false).css('cursor', 'pointer' ).addClass('btn btn-success');
+        } else {
+            $('#btn-abrir-modal').prop('disabled', true).css('cursor', 'not-allowed');
         }
-        studentCount++;
-    });
+        if (institucionSeleccionada && hasStudents) {
+            $('#pdf-file-1, #pdf-file-2').prop('disabled', false).css('cursor', 'pointer');
+            $('#btn-upload-plan, #btn-upload-memoria').prop('disabled', false).css('cursor', 'pointer').addClass('btn btn-success');
+        } else {
+            $('#btn-upload-plan, #btn-upload-memoria, #pdf-file-1, #pdf-file-2').prop('disabled', true).css('cursor', 'not-allowed');
+        }
 
-    let hasStudents = studentCount > 0;
+        if (valorCampoNumerico && institucionSeleccionada && hasStudents) {
+            $('#btn-generar-carta').prop('disabled', false).css('cursor', 'pointer').addClass('btn btn-success');
+        } else {
+            $('#btn-generar-carta').prop('disabled', true).css('cursor', 'not-allowed');
+        }
 
-    if (institucionSeleccionada && allStudentsSelected && hasStudents) {
-        $('#btn-abrir-modal').prop('disabled', false).css('cursor', 'pointer' ).addClass('btn btn-success');
-    } else {
-        $('#btn-abrir-modal').prop('disabled', true).css('cursor', 'not-allowed');
-    }
-    if (institucionSeleccionada && hasStudents) {
-        $('#pdf-file-1, #pdf-file-2').prop('disabled', false).css('cursor', 'pointer');
-        $('#btn-upload-plan, #btn-upload-memoria').prop('disabled', false).css('cursor', 'pointer').addClass('btn btn-success');
-    } else {
-        $('#btn-upload-plan, #btn-upload-memoria, #pdf-file-1, #pdf-file-2').prop('disabled', true).css('cursor', 'not-allowed');
     }
 
-    if (valorCampoNumerico && institucionSeleccionada && hasStudents) {
-        $('#btn-generar-carta').prop('disabled', false).css('cursor', 'pointer').addClass('btn btn-success');
-    } else {
-        $('#btn-generar-carta').prop('disabled', true).css('cursor', 'not-allowed');
-    }
+            $('#campo-numerico').on('input', toggleButtons);
+            $('.tom-select-institucion').on('change', toggleButtons);
+            $('#tabla-estudiantes').on('change', 'select[name="gender"]', toggleButtons);
 
-}
-
-$('#campo-numerico').on('input', toggleButtons);
-$('.tom-select-institucion').on('change', toggleButtons);
-$('#tabla-estudiantes').on('change', 'select[name="gender"]', toggleButtons);
-
-// Ejecutar la función de validación inicial para asegurarse de que los botones están en el estado correcto al cargar la página
-$(document).ready(function() {
-    toggleButtons();
-});
+            // Ejecutar la función de validación inicial para asegurarse de que los botones están en el estado correcto al cargar la página
+            $(document).ready(function() {
+                toggleButtons();
+            });
 
 
 
@@ -459,58 +458,58 @@ $(document).ready(function() {
     document.getElementById('btn-upload-plan').addEventListener('click', function(event) {
     event.preventDefault();
     document.getElementById('pdf-file-1').click();
-});
+    });
 
-document.getElementById('btn-upload-memoria').addEventListener('click', function(event) {
-    event.preventDefault();
-    document.getElementById('pdf-file-2').click();
-});
+    document.getElementById('btn-upload-memoria').addEventListener('click', function(event) {
+        event.preventDefault();
+        document.getElementById('pdf-file-2').click();
+    });
 
-document.getElementById('pdf-file-1').addEventListener('change', function() {
-    var file = this.files[0];
-    subirArchivo(file, 2); // 2 para tipo plan
-});
+    document.getElementById('pdf-file-1').addEventListener('change', function() {
+        var file = this.files[0];
+        subirArchivo(file, 2); // 2 para tipo plan
+    });
 
-document.getElementById('pdf-file-2').addEventListener('change', function() {
-    var file = this.files[0];
-    subirArchivo(file, 3); // 3 para tipo memoria
-});
+    document.getElementById('pdf-file-2').addEventListener('change', function() {
+        var file = this.files[0];
+        subirArchivo(file, 3); // 3 para tipo memoria
+    });
 
-function subirArchivo(file, tipo) {
-    var formData = new FormData();
-    formData.append('_csrf', '<?= Yii::$app->request->csrfToken ?>');
-    formData.append('pdfFile', file);
-    formData.append('tipo', tipo); // tipo (2 para plan, 3 para memoria)
+    function subirArchivo(file, tipo) {
+        var formData = new FormData();
+        formData.append('_csrf', '<?= Yii::$app->request->csrfToken ?>');
+        formData.append('pdfFile', file);
+        formData.append('tipo', tipo); // tipo (2 para plan, 3 para memoria)
 
-    // Obtener los IDs de los estudiantes seleccionados
-    let selectedIds = Object.keys(estudiantesSeleccionados);
-    let idAlumnosValue = selectedIds.join(',');
+        // Obtener los IDs de los estudiantes seleccionados
+        let selectedIds = Object.keys(estudiantesSeleccionados);
+        let idAlumnosValue = selectedIds.join(',');
 
-    let idInstitucion = document.querySelector('.tom-select-institucion').value;
-        formData.append('idAlumnos', idAlumnosValue);
-        formData.append('idInstitucion', idInstitucion);
-        console.log(idAlumnosValue)
+        let idInstitucion = document.querySelector('.tom-select-institucion').value;
+            formData.append('idAlumnos', idAlumnosValue);
+            formData.append('idInstitucion', idInstitucion);
+            console.log(idAlumnosValue)
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', '<?= Yii::$app->urlManager->createUrl(['carta/subir']) ?>', true);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '<?= Yii::$app->urlManager->createUrl(['carta/subir']) ?>', true);
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                let response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        mostrarAlerta();
-                    } else {
-                        mostrarAlerta();
-                    }
-            } else {
-                alert('Error al subir el archivo.');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    let response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            mostrarAlerta();
+                        } else {
+                            mostrarAlerta();
+                        }
+                } else {
+                    alert('Error al subir el archivo.');
+                }
             }
-        }
-    };
+        };
 
-    xhr.send(formData);
-}
+        xhr.send(formData);
+    }
     // Función para filtrar la lista de estudiantes
     function filtrarListaEstudiantes(carrera) {
         let select = document.getElementById('tblalumno-id_alumno');
@@ -715,19 +714,19 @@ function subirArchivo(file, tipo) {
         });
         toggleButtons();
     }
-});
-
-
-    // Validar antes de enviar el formulario
-    document.getElementById('form-seleccion-estudiantes').addEventListener('submit', function(event) {
-        if (Object.keys(estudiantesSeleccionados).length === 0) {
-            alert('Debe agregar al menos un estudiante para continuar.');
-            event.preventDefault(); // Evitar el envío del formulario si no hay estudiantes seleccionados
-        }
     });
-});
+
+
+        // Validar antes de enviar el formulario
+        document.getElementById('form-seleccion-estudiantes').addEventListener('submit', function(event) {
+            if (Object.keys(estudiantesSeleccionados).length === 0) {
+                alert('Debe agregar al menos un estudiante para continuar.');
+                event.preventDefault(); // Evitar el envío del formulario si no hay estudiantes seleccionados
+            }
+        });
+    });
 </script>
-<!-- Script de JavaScript con SweetAlert2 -->
+
 <script>
     // Función para mostrar la alerta
     function mostrarAlerta() {
@@ -742,14 +741,14 @@ function subirArchivo(file, tipo) {
                 location.reload();
     });
     
-}   
-function alertaError() {
-    Swal.fire({
-  icon: "error",
-  title: "Oops...",
-  text: "Something went wrong!",
-  footer: '<p>Try again later</p>'
-});
-    
-} 
+    }   
+    function alertaError() {
+        Swal.fire({
+    icon: "error",
+    title: "Oops...",
+    text: "Something went wrong!",
+    footer: '<p>Try again later</p>'
+    });
+        
+    } 
 </script>
