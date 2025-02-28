@@ -32,6 +32,7 @@ class ExpedienteController extends Controller
             ->innerJoin(['a' => 'tbl_archivos'], 't1.fk_archivo = a.id_archivo')
             ->innerJoin(['al' => 'tbl_alumno'], 't1.fk_alumnoExpediente = al.id_alumno')
             ->where(['t1.fk_tipoExpediente' => 1])
+            ->andWhere(['!=', 'al.fk_estado_alumno', 3])
             ->andWhere(['not exists', $subQuery])
             ->orderBy(['dias_transcurridos' => SORT_DESC]);
 
