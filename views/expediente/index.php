@@ -1,7 +1,7 @@
 <?php
 use yii\grid\GridView;
 use yii\bootstrap5\LinkPager;
-
+use yii\helpers\Html;
 ?>
 
 <div class="expedientes-index">
@@ -10,9 +10,21 @@ use yii\bootstrap5\LinkPager;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
             [
-                'attribute' => 'fk_alumnoExpediente',
-                'label' => 'Alumno'
+                'label' => 'Alumno',
+                'format' => 'raw',
+                'value' => function($model) {
+                    // Genera un enlace al perfil del alumno utilizando solo el nombre
+                    return Html::a(
+                        $model['nombre_alumno'],
+                        ['tbl-alumno/view', 'id_alumno' => $model['fk_alumnoExpediente']]
+                    );
+                }
             ],
+            [
+                'attribute' => 'codigo',
+                'label' => 'Código'
+            ],
+            
             [
                 'attribute' => 'fecha_creado',
                 'label' => 'Fecha Creado'
@@ -21,14 +33,15 @@ use yii\bootstrap5\LinkPager;
                 'attribute' => 'dias_transcurridos',
                 'label' => 'Días Transcurridos'
             ],
+            
         ],
         'pager' => [
-            'class' => LinkPager::className(),
+            'class' => LinkPager::class,
             'prevPageLabel' => 'Anterior',
             'nextPageLabel' => 'Siguiente',
-            'maxButtonCount' => 20,
+            'maxButtonCount' => 50,
             'options' => [
-                'class' => 'pagination-custom', // Clase CSS personalizada para la paginación
+                'class' => 'pagination-custom',
             ],
         ],
     ]); ?>
