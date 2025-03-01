@@ -2,6 +2,8 @@
 use yii\grid\GridView;
 use yii\bootstrap5\LinkPager;
 use yii\helpers\Html;
+use app\models\TblCarrera;
+
 ?>
 
 <div class="expedientes-index">
@@ -24,7 +26,15 @@ use yii\helpers\Html;
                 'attribute' => 'codigo',
                 'label' => 'Código'
             ],
-            
+            [
+                'label' => 'Carrera',
+                'format' => 'raw',
+                'value' => function($model) {
+                    // Accede a la relación de la carrera a través del modelo del alumno
+                    $alumno = \app\models\TblAlumno::findOne($model['fk_alumnoExpediente']);
+                    return $alumno ? $alumno->fkCarrera->nombre_carrera : 'Sin carrera';
+                }
+            ],
             [
                 'attribute' => 'fecha_creado',
                 'label' => 'Fecha Creado'

@@ -47,7 +47,7 @@ $this->title = 'Servicio Social UNIVO';
                     <div class="card-body">
                         <h5 class="card-title text-center">Alertas</h5>
                         <p class="card-text">Seguimiento a estudiantes asignados, sin plan de trabajo en sistema.</p>
-                        <?= Html::a('Go', ['tbl-proyecto/index'], ['class' => 'btn btn-primary stretched-link']) ?>
+                        <?= Html::a('Go', ['expediente/index'], ['class' => 'btn btn-primary stretched-link']) ?>
                     </div>
                 </div>
             </div>
