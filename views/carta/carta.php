@@ -207,8 +207,8 @@
 <?php endif; ?>
         <br>
         <p class="center-text">
-            Licda. Gabriela Patricia Díaz García <br>
-            Coordinadora de Servicio Social.
+        <?= $coordinador['nombre'] ?> <br>
+        <?= $coordinador['cargo'] ?>
         </p>
     </div>
 

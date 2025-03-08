@@ -35,6 +35,9 @@ class CartaController extends BaseController
     {
         $idAlumnos = explode(',', $idAlumnos);
         $alumnos = TblAlumno::find()->where(['id_alumno' => $idAlumnos])->all();
+        $director = TblCargos::findOne(1);
+        $coordinador = TblCargos::findOne(2);
+
     
         if (empty($alumnos)) {
             throw new \yii\web\NotFoundHttpException("No se encontraron alumnos con los IDs proporcionados.");
@@ -51,7 +54,9 @@ class CartaController extends BaseController
             'alumnos' => $alumnos,
             'institucion' => $institucion,
             'nombreFormateado' => $nombreFormateado,
-            'campoNumerico' => $campoNumerico 
+            'campoNumerico' => $campoNumerico,
+            'director' => $director,
+            'coordinador' => $coordinador
         ]);
     
         $mpdf = new \Mpdf\Mpdf([
