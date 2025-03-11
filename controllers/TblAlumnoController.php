@@ -134,21 +134,39 @@ class TblAlumnoController extends BaseController
     {
         $model = new TblAlumno();
         $model->scenario = TblAlumno::SCENARIO_CREATE;
-	$model->fk_estado_alumno = 5; 
-
-
+        $model->fk_estado_alumno = 5;  // Asignar un valor por defecto a fk_estado_alumno
+    
+        // Procesar la solicitud POST
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['tbl-f1/create2', 'id_alumno' => $model->id_alumno]);
+            // Cargar los datos y validar el modelo
+            if ($model->load($this->request->post())) {
+                            // Buscar si el código y el nombre ya existen
+            $existingAlumno = TblAlumno::find()
+            ->where(['codigo' => $model->codigo])
+            ->andWhere(['nombre_alumno' => $model->nombre_alumno])
+            ->one();  // Buscar la coincidencia exacta
+
+                if ($existingAlumno) {
+                    // Si existe, redirigir al 'create2' con el ID del alumno existente
+                    return $this->redirect(['tbl-f1/create2', 'id_alumno' => $existingAlumno->id_alumno]);
+                }
+                if ($model->validate()) { // Solo se guarda si la validación es exitosa
+                    if ($model->save()) {
+                        // Redirigir a la acción create2 con el ID del nuevo alumno
+                        return $this->redirect(['tbl-f1/create2', 'id_alumno' => $model->id_alumno]);
+                    }
+                }
             }
         } else {
-            $model->loadDefaultValues();
+            $model->loadDefaultValues();  // Cargar valores por defecto si la solicitud no es POST
         }
-
+    
+        // Renderizar la vista 'create2' con el modelo
         return $this->render('create2', [
             'model' => $model,
         ]);
     }
+    
 
     /**
      * Updates an existing TblAlumno model.

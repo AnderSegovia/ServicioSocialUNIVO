@@ -5,7 +5,7 @@ use app\models\TblCarrera;
 use app\models\TblEstadoAlumno;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\widgets\ActiveForm; 
 
 /** @var yii\web\View $this */
 /** @var app\models\TblAlumno $model */
@@ -22,29 +22,29 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
         <!-- Primera columna -->
         <div class="col-md-6">
 
-<?= $form->field($model, 'nombre_alumno')->textInput([
-    'maxlength' => true,
-    'id' => 'nombre-alumno-input'
-]) ?>
+        <?= $form->field($model, 'nombre_alumno')->textInput([
+            'maxlength' => true,
+            'id' => 'nombre-alumno-input'
+        ]) ?>
 
-<?= $form->field($model, 'codigo')->textInput([
-    'maxlength' => true,
-    'id' => 'codigo-input', // ID único
-    'placeholder' => ''
-]) ?>
+        <?= $form->field($model, 'codigo')->textInput([
+            'maxlength' => true,
+            'id' => 'codigo-input', // ID único
+            'placeholder' => ''
+        ]) ?>
 
-<?= $form->field($model, 'telefono')->textInput([
-    'maxlength' => true,
-    'id' => 'telefono-input',
-    'placeholder' => '',
-]) ?>
+        <?= $form->field($model, 'telefono')->textInput([
+            'maxlength' => true,
+            'id' => 'telefono-input',
+            'placeholder' => '',
+        ]) ?>
 
 
-<?= $form->field($model, 'correo')->textInput([
-    'maxlength' => true,
-    'id' => 'correo-input', // ID único
-    'placeholder' => '' // Ayuda visual
-]) ?>
+        <?= $form->field($model, 'correo')->textInput([
+            'maxlength' => true,
+            'id' => 'correo-input', // ID único
+            'placeholder' => '' // Ayuda visual
+        ]) ?>
     </div>
         
         <!-- Segunda columna -->
@@ -58,7 +58,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
     ]
 ) ?>
 
-        <?= $form->field($model, 'numero_materias')->input('number', ['min' => 10, 'max' => 50])->label('Cantidad de Materias Aprobadas') ?>
+    <?= $form->field($model, 'numero_materias')->input('number', ['min' => 10, 'max' => 50])->label('Cantidad de Materias Aprobadas') ?>
         </div>
     </div>
 
