@@ -4,46 +4,50 @@ namespace app\controllers;
 use Yii;
 use yii\web\Controller;
 use Mpdf\Mpdf;
-use app\models\TblAlumno;
-use app\models\TblArchivos;
-use app\models\TblNames;
-use app\models\TblExpediente;
-use app\models\TblInstituciones;
-use app\models\TblCargos;
-use app\models\TblPivote;
-use app\models\TblProyecto;
-use app\models\UploadForm;
-use DateTime;
-use NumberFormatter;
 use setasign\Fpdi\Fpdi;
 use yii\web\Response;
 use yii\web\UploadedFile;
+use DateTime;
+use NumberFormatter;
+use app\models\{
+    TblAlumno,
+    TblArchivos,
+    TblNames,
+    TblExpediente,
+    TblInstituciones,
+    TblCargos,
+    TblPivote,
+    TblProyecto,
+    UploadForm
+};
 
 class CartaController extends BaseController
 {
+    /**
+     * Muestra la vista de índice con el modelo de alumno e instituciones.
+     */
     public function actionIndex()
     {
-        $model = new TblAlumno();
-        $instituciones = TblInstituciones::find()->all();
-
         return $this->render('index', [
-            'model' => $model,  
-            'instituciones' => $instituciones,
+            'model' => new TblAlumno(),
+            'instituciones' => TblInstituciones::find()->all(),
         ]);
     }
+    
+    /**
+     * Genera la carta en PDF para los alumnos e institución proporcionados.
+     */
     public function actionGenerarCarta($idAlumnos, $idInstitucion, $campoNumerico)
     {
         $idAlumnos = explode(',', $idAlumnos);
         $alumnos = TblAlumno::find()->where(['id_alumno' => $idAlumnos])->all();
+        $institucion = TblInstituciones::findOne($idInstitucion);
         $director = TblCargos::findOne(1);
         $coordinador = TblCargos::findOne(2);
 
-    
         if (empty($alumnos)) {
             throw new \yii\web\NotFoundHttpException("No se encontraron alumnos con los IDs proporcionados.");
         }
-    
-        $institucion = TblInstituciones::findOne($idInstitucion);
         if ($institucion === null) {
             throw new \yii\web\NotFoundHttpException("La institución con ID $idInstitucion no existe.");
         }
@@ -59,26 +63,12 @@ class CartaController extends BaseController
             'coordinador' => $coordinador
         ]);
     
-        $mpdf = new \Mpdf\Mpdf([
-
-                'mode' => 'utf-8',
-                'format' => 'Letter',
-                'fontDir' => ['C:/xampp/htdocs/ServicioSocialUnivo/views/carta/fonts'],
-                'fontdata' => [
-                    'arial' => [
-                        'R' => 'arial.ttf',
-                        'B' => 'arialbd.ttf',
-                        'I' => 'ariali.ttf',
-                        'BI' => 'arialbi.ttf',
-                    ]
-                ],
-                'default_font' => 'arial',
-            
-            'format' => 'Letter',
+        // Instancia de mPDF con configuración adicional de márgenes.
+        $mpdf = $this->createMpdf([
             'margin_left' => 30,
             'margin_right' => 20,
             'margin_top' => 20,
-            'margin_bottom' => 5
+            'margin_bottom' => 5,
         ]);
     
         $mpdf->WriteHTML("<style>p { text-align: justify; }</style>");
@@ -91,13 +81,13 @@ class CartaController extends BaseController
 
         $archivo = new TblArchivos();
         $archivo->nombre_archivo = $uniqueFileName;
-        $archivo->fk_institucionArchivo= $idInstitucion;
+        $archivo->fk_institucionArchivo = $idInstitucion;
         
         if ($archivo->save()) {
             $idArchivoGuardado = $archivo->id_archivo;
             
             foreach ($idAlumnos as $idAlumno) {
-                // Actualizar el estado del alumno
+                // Actualizar estado del alumno
                 $alumno = TblAlumno::findOne($idAlumno);
                 if ($alumno) {
                     $alumno->fk_estado_alumno = 1;
@@ -108,7 +98,7 @@ class CartaController extends BaseController
                     Yii::error("No se encontró el alumno con ID $idAlumno");
                 }
                 
-                // Guardar el expediente
+                // Registrar el expediente
                 $expediente = new TblExpediente();
                 $expediente->fk_alumnoExpediente = $idAlumno;
                 $expediente->fk_tipoExpediente = 1;
@@ -122,91 +112,38 @@ class CartaController extends BaseController
             Yii::error("Error al guardar la carta");
         }
         
-
         return Yii::$app->response->sendFile($filePath, $uniqueFileName, ['inline' => true]);
     }
-    private function formatInstitutionName($name) {
-        $lowercaseWords = ['la', 'los', 'que', 'lo', 'de', 'del', 'al', 'y', 'a', 'el', 'las', 'en', 'con', 'por', 'para'];
-        $exceptions = ['El Salvador','FUNDAGEO','La Unión','SOS','La Trinidad','USAID','El Niño','ADESCO','El Milagro','UNIVO','INN','El Rosario','Las Marias','El Zamorán','ES0867','FULSAMO','ES0841','La Sincuya','S.A','C.V']; // Lista de excepciones
-        $exceptionPlaceholders = [];
     
-        // Paso 1: Reemplazar excepciones con marcadores únicos
-        foreach ($exceptions as $index => $exception) {
-            if (stripos($name, $exception) !== false) {
-                $placeholder = "__EXCEPTION_{$index}__";
-                $exceptionPlaceholders[$placeholder] = $exception;
-                $name = str_ireplace($exception, $placeholder, $name);
-            }
-        }
-    
-        // Paso 2: Extraer y preservar texto entre paréntesis
-        preg_match_all('/\((.*?)\)/', $name, $matches);
-        $parts = preg_split('/(\(.*?\))/', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
-    
-        // Paso 3: Formatear las partes fuera de los paréntesis
-        foreach ($parts as &$part) {
-            if (preg_match('/^\(.*?\)$/', $part)) {
-                continue; // Saltar partes que están entre paréntesis
-            }
-            
-            $words = preg_split('/(\W+)/u', $part, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-            foreach ($words as &$word) {
-                if (array_key_exists($word, $exceptionPlaceholders)) {
-                    $word = $exceptionPlaceholders[$word];
-                } elseif (!in_array(mb_strtolower($word, 'UTF-8'), $lowercaseWords)) {
-                    $word = mb_convert_case($word, MB_CASE_TITLE, 'UTF-8');
-                } else {
-                    $word = mb_strtolower($word, 'UTF-8');
-                }
-            }
-            $part = implode('', $words);
-        }
-    
-        // Paso 4: Unir las partes formateadas
-        $formattedName = implode('', $parts);
-    
-        // Paso 5: Restaurar las excepciones
-        foreach ($exceptionPlaceholders as $placeholder => $exception) {
-            $formattedName = str_replace($placeholder, $exception, $formattedName);
-        }
-    
-        return trim($formattedName);
-    }
+    /**
+     * Sube un archivo PDF y registra la información correspondiente en la base de datos.
+     */
     public function actionSubir()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
     
         $pdfFile = UploadedFile::getInstanceByName('pdfFile');
-        $tipo = Yii::$app->request->post('tipo'); // Recibir el tipo (2 para plan, 3 para memoria)
+        $tipo = Yii::$app->request->post('tipo');
         $idAlumnos = Yii::$app->request->post('idAlumnos');
         $idInstitucion = Yii::$app->request->post('idInstitucion');
 
-    
-        // Procesar el archivo PDF y los datos adicionales
         if ($pdfFile !== null && $tipo !== null && $idAlumnos !== null) {
-            // Guardar el archivo en el servidor
             $rutaArchivo = 'C:/xampp/htdocs/ServicioSocialUnivo/web/archivos/';
-            if($tipo==2){
-                $nombreArchivo = 'Plan_'.uniqid() . '.' . $pdfFile->extension;
-
-            }else if($tipo==3){
-                $nombreArchivo = 'Memoria_'.uniqid() . '.' . $pdfFile->extension;
+            if ($tipo == 2) {
+                $nombreArchivo = 'Plan_' . uniqid() . '.' . $pdfFile->extension;
+            } else if ($tipo == 3) {
+                $nombreArchivo = 'Memoria_' . uniqid() . '.' . $pdfFile->extension;
             }
     
             if ($pdfFile->saveAs($rutaArchivo . $nombreArchivo)) {
-                // Guardar el nombre del archivo en la tabla archivos
                 $archivo = new TblArchivos();
                 $archivo->nombre_archivo = $nombreArchivo;
-                $archivo->fk_institucionArchivo= $idInstitucion;
-
+                $archivo->fk_institucionArchivo = $idInstitucion;
     
                 if ($archivo->save()) {
                     $idArchivo = $archivo->id_archivo;
-    
-                    // Convertir idAlumnos a un array de IDs
                     $idAlumnosArray = explode(',', $idAlumnos);
     
-                    // Guardar en la tabla expediente para cada ID de alumno
                     foreach ($idAlumnosArray as $idAlumno) {
                         $expediente = new TblExpediente();
                         $expediente->fk_alumnoExpediente = $idAlumno;
@@ -232,6 +169,10 @@ class CartaController extends BaseController
             return ['status' => 'error', 'message' => 'Datos incompletos recibidos.'];
         }
     }
+    
+    /**
+     * Visualiza el PDF en línea.
+     */
     public function actionVerPdf($nombre)
     {
         $path = Yii::getAlias('C:/xampp/htdocs/ServicioSocialUnivo/web/archivos/' . $nombre);
@@ -241,13 +182,19 @@ class CartaController extends BaseController
             throw new \yii\web\NotFoundHttpException('El archivo no existe.');
         }
     }
-    // Función para convertir número a palabras
+    
+    /**
+     * Convierte un número a palabras en español.
+     */
     private function numberToWords($number)
     {
-        $f = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-        return $f->format($number);
+        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
+        return $formatter->format($number);
     }
-    // Función para formatear la fecha en palabras
+    
+    /**
+     * Formatea una fecha a palabras.
+     */
     private function formatDateToWords($date)
     {
         $dateTime = new DateTime($date);
@@ -272,7 +219,10 @@ class CartaController extends BaseController
     
         return "a los $day días del mes de " . $months[$month] . " del año $year";
     }
-    // Función para formatear fechas personalizadas
+    
+    /**
+     * Formatea una fecha utilizando un IntlDateFormatter personalizado.
+     */
     private function formatCustomDate($date, $dateFormatter)
     {
         if ($date) {
@@ -285,278 +235,236 @@ class CartaController extends BaseController
         }
         return null;
     }
+    
+    /**
+     * Genera la constancia, combina los PDFs individuales y registra la información en la base de datos.
+     */
     public function actionConstancia()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
     
         try {
-            if (Yii::$app->request->isPost) {
-                $datosAdicionales = Yii::$app->request->post('datosAdicionales');
-                $estudiantes = Yii::$app->request->post('estudiantes');
-                $idInstitucion = Yii::$app->request->post('idInstitucion');
-                $idInstitucion2 = Yii::$app->request->post('idInstitucion2');
-                $actividades = Yii::$app->request->post('actividades');
-                $actividades2 = Yii::$app->request->post('actividades2');
+            if (!Yii::$app->request->isPost) {
+                throw new \Exception('Solicitud inválida');
+            }
     
-                if (empty($datosAdicionales) || empty($estudiantes) || empty($idInstitucion)) {
-                    throw new \Exception('Faltan datos requeridos.');
+            $datosAdicionales = Yii::$app->request->post('datosAdicionales');
+            $estudiantes = Yii::$app->request->post('estudiantes');
+            $idInstitucion = Yii::$app->request->post('idInstitucion');
+            $idInstitucion2 = Yii::$app->request->post('idInstitucion2');
+            $actividades = Yii::$app->request->post('actividades');
+            $actividades2 = Yii::$app->request->post('actividades2');
+    
+            if (empty($datosAdicionales) || empty($estudiantes) || empty($idInstitucion)) {
+                throw new \Exception('Faltan datos requeridos.');
+            }
+    
+            $pdfDir = Yii::getAlias('@webroot/archivos/');
+            if (!is_dir($pdfDir)) {
+                mkdir($pdfDir, 0777, true);
+            }
+    
+            $pdfFiles = [];
+            $combinedPdfFilePath = $pdfDir . 'Constancia-Solvencia.pdf';
+    
+            $director = TblCargos::findOne(1);
+            $coordinador = TblCargos::findOne(2);
+            $colaborador = TblCargos::findOne(3);
+    
+            $institucion = TblInstituciones::findOne($idInstitucion);
+            if (!$institucion) {
+                throw new \Exception('Institución no encontrada: ' . $idInstitucion);
+            }
+            $institucion2 = TblInstituciones::findOne($idInstitucion2);
+            if (!$institucion2) {
+                throw new \Exception('Institución2 no encontrada: ' . $idInstitucion2);
+            }
+    
+            $nombreFormateado = $this->formatInstitutionName($institucion->nombre_institucion);
+            $nombreFormateado2 = $this->formatInstitutionName($institucion2->nombre_institucion);
+    
+            $dateFormatterFull = new \IntlDateFormatter(
+                'es_ES',
+                \IntlDateFormatter::FULL,
+                \IntlDateFormatter::NONE,
+                'America/El_Salvador',
+                \IntlDateFormatter::TRADITIONAL,
+                "d 'de' MMMM 'del año' yyyy"
+            );
+    
+            $dateFormatterNoYear = new \IntlDateFormatter(
+                'es_ES',
+                \IntlDateFormatter::FULL,
+                \IntlDateFormatter::NONE,
+                'America/El_Salvador',
+                \IntlDateFormatter::TRADITIONAL,
+                "d 'de' MMMM"
+            );
+    
+            $fromDate = isset($datosAdicionales['from_date']) ? new DateTime($datosAdicionales['from_date']) : null;
+            $toDate = isset($datosAdicionales['to_date']) ? new DateTime($datosAdicionales['to_date']) : null;
+    
+            $useFullFormatForFromDate = !$fromDate || !$toDate || $fromDate->format('Y') !== $toDate->format('Y');
+            $dateFormatterForFromDate = $useFullFormatForFromDate ? $dateFormatterFull : $dateFormatterNoYear;
+    
+            $formattedFromDate = $this->formatCustomDate($fromDate, $dateFormatterForFromDate);
+            $formattedToDate = $this->formatCustomDate($toDate, $dateFormatterFull);
+    
+            $fromDate2 = isset($datosAdicionales['from_date2']) ? new DateTime($datosAdicionales['from_date2']) : null;
+            $toDate2 = isset($datosAdicionales['to_date2']) ? new DateTime($datosAdicionales['to_date2']) : null;
+    
+            $useFullFormatForFromDate2 = !$fromDate2 || !$toDate2 || $fromDate2->format('Y') !== $toDate2->format('Y');
+            $dateFormatterForFromDate2 = $useFullFormatForFromDate2 ? $dateFormatterFull : $dateFormatterNoYear;
+            $formattedFromDate2 = $this->formatCustomDate($fromDate2, $dateFormatterForFromDate2);
+            $formattedToDate2 = $this->formatCustomDate($toDate2, $dateFormatterFull);
+    
+            $fecha = $this->formatDateToWords(date('Y-m-d'));
+    
+            foreach ($estudiantes as $estudiante) {
+                if (!isset($estudiante['id'], $estudiante['gender'], $estudiante['titulo'])) {
+                    throw new \Exception('Datos del estudiante incompletos.');
                 }
     
-                // Ruta donde se guardarán los PDFs
-                $pdfDir = Yii::getAlias('@webroot/archivos/');
-                if (!is_dir($pdfDir)) {
-                    mkdir($pdfDir, 0777, true);
+                $alumno = TblAlumno::findOne($estudiante['id']);
+                if (!$alumno) {
+                    throw new \Exception('Estudiante no encontrado: ' . $estudiante['id']);
                 }
     
-                $pdfFiles = [];
-                $combinedPdfFilePath = $pdfDir . 'Constancia-Solvencia.pdf';
-
-                $director = TblCargos::findOne(1);
-                $coordinador = TblCargos::findOne(2);
-                $colaborador = TblCargos::findOne(3);
-
-
-                $institucion = TblInstituciones::findOne($idInstitucion);
-                if (!$institucion) {
-                    throw new \Exception('Institución no encontrada: ' . $idInstitucion);
-                }
-                $institucion2 = TblInstituciones::findOne($idInstitucion2);
-                if (!$institucion2) {
-                    throw new \Exception('Institución2 no encontrada: ' . $idInstitucion2);
-                }
-                $nombreFormateado = $this->formatInstitutionName($institucion->nombre_institucion);
-                $nombreFormateado2 = $this->formatInstitutionName($institucion2->nombre_institucion);
-
-                $dateFormatterFull = new \IntlDateFormatter(
-                    'es_ES',
-                    \IntlDateFormatter::FULL,
-                    \IntlDateFormatter::NONE,
-                    'America/El_Salvador',
-                    \IntlDateFormatter::TRADITIONAL,
-                    "d 'de' MMMM 'del año' yyyy"
-                );
-
-                $dateFormatterNoYear = new \IntlDateFormatter(
-                    'es_ES',
-                    \IntlDateFormatter::FULL,
-                    \IntlDateFormatter::NONE,
-                    'America/El_Salvador',
-                    \IntlDateFormatter::TRADITIONAL,
-                    "d 'de' MMMM"
-                );
-                
-
-                $fromDate = isset($datosAdicionales['from_date']) ? new \DateTime($datosAdicionales['from_date']) : null;
-                $toDate = isset($datosAdicionales['to_date']) ? new \DateTime($datosAdicionales['to_date']) : null;
-
-                $useFullFormatForFromDate = !$fromDate || !$toDate || $fromDate->format('Y') !== $toDate->format('Y');
-                $dateFormatterForFromDate = $useFullFormatForFromDate ? $dateFormatterFull : $dateFormatterNoYear;
-
-                $formattedFromDate = $this->formatCustomDate($fromDate, $dateFormatterForFromDate);
-                $formattedToDate = $this->formatCustomDate($toDate, $dateFormatterFull);
-
-                $fromDate2 = isset($datosAdicionales['from_date2']) ? new \DateTime($datosAdicionales['from_date2']) : null;
-                $toDate2 = isset($datosAdicionales['to_date2']) ? new \DateTime($datosAdicionales['to_date2']) : null;
-
-                $useFullFormatForFromDate2 = !$fromDate2 || !$toDate2 || $fromDate2->format('Y') !== $toDate2->format('Y');
-                $dateFormatterForFromDate2 = $useFullFormatForFromDate2 ? $dateFormatterFull : $dateFormatterNoYear;
-                $formattedFromDate2 = $this->formatCustomDate($fromDate2, $dateFormatterForFromDate2);
-                $formattedToDate2 = $this->formatCustomDate($toDate2, $dateFormatterFull);
-                $fecha = $this->formatDateToWords(date('Y-m-d'));
-                // Generar PDFs individuales
-                foreach ($estudiantes as $estudiante) {
-                    if (!isset($estudiante['id'], $estudiante['gender'])) {
-                        throw new \Exception('Datos del estudiante incompletos.');
-                    }
-                    if (!isset($estudiante['id'], $estudiante['titulo'])) {
-                        throw new \Exception('Datos del estudiante incompletos.');
-                    }
-    
-                    $alumno = TblAlumno::findOne($estudiante['id']);
-                    if (!$alumno) {
-                        throw new \Exception('Estudiante no encontrado: ' . $estudiante['id']);
-                    }                        
-                // Variable para rastrear si hubo cambios
                 $cambioRealizado = false;
-
-                // Formatear el nombre del alumno y verificar si hubo cambios
                 $nombreFormateadoEstudiante = $this->formatearNombre($alumno->nombre_alumno, $cambioRealizado);
-
-                // Si hubo cambios, actualizar el nombre en la base de datos
+    
                 if ($cambioRealizado) {
                     $alumno->nombre_alumno = $nombreFormateadoEstudiante;
                     if (!$alumno->save()) {
                         throw new \Exception('Error al actualizar el nombre del alumno: ' . json_encode($alumno->errors));
                     }
-
-                    // Mensaje de depuración
                     Yii::debug("Nombre del estudiante actualizado: " . $nombreFormateadoEstudiante);
                 } else {
-                    // Mensaje de depuración si no hubo cambios
                     Yii::debug("No se realizaron cambios en el nombre del estudiante: " . $alumno->nombre_alumno);
-                }                    $data = [
-                        'fecha' => $fecha,
-                        'fromDate' => $formattedFromDate,
-                        'toDate' => $formattedToDate,
-                        'fromDate2' => $formattedFromDate2,
-                        'toDate2' => $formattedToDate2,
-                        'genero' => $estudiante['gender'],
-                        'titulo' => $estudiante['titulo'],
-                        'alumno' => $alumno,
-                        'nombreFormateado' => $nombreFormateado,
-                        'nombreFormateado2' => $nombreFormateado2,
-                        'institucion' => $institucion,
-                        'institucion2' => $institucion2,
-                        'datosAdicionales' => $datosAdicionales,
-                        'actividades' => $actividades,
-                        'actividades2' => $actividades2,
-                        'director' => $director,
-                        'coordinador' => $coordinador,
-                        'colaborador' => $colaborador,
-                        'nombreFormateadoEstudiante' => $nombreFormateadoEstudiante
-                    ];
-
-                    
-                    if($alumno->fkCarrera->fkFacultad->id_facultad == 2){
-                        $constanciaSaludHtml = $this->renderPartial('constanciasalud', $data);
-                    }else{
-                        $constanciaHtml = $this->renderPartial('constancia', $data);
-                    }
-                    $juntaHtml = $this->renderPartial('junta', $data);
-                    $solvenciaHtml = $this->renderPartial('solvencia', $data);
-    
-                    $mpdfConfig = [
-                        'mode' => 'utf-8',
-                        'format' => 'Letter',
-                        'fontDir' => ['C:/xampp/htdocs/ServicioSocialUnivo/views/carta/fonts'],
-                        'fontdata' => [
-                            'arial' => [
-                                'R' => 'arial.ttf',
-                                'B' => 'arialbd.ttf',
-                                'I' => 'ariali.ttf',
-                                'BI' => 'arialbi.ttf',
-                            ]
-                        ],
-                        'default_font' => 'arial'
-                    ];
-    
-                    $mpdf = new \Mpdf\Mpdf($mpdfConfig);
-                    if($alumno->fkCarrera->fkFacultad->id_facultad == 2){
-                        $mpdf->WriteHTML($constanciaSaludHtml);
-                        $mpdf->AddPage();
-                        $mpdf->WriteHTML($constanciaSaludHtml);
-
-                    }else{
-                        $mpdf->WriteHTML($constanciaHtml);
-                        $mpdf->AddPage();
-                        $mpdf->WriteHTML($constanciaHtml);
-                    }
-
-                    if($alumno->fkCarrera->id_carrera == 33 || $alumno->fkCarrera->id_carrera == 56){
-                        $mpdf->AddPage();
-                        $mpdf->WriteHTML($juntaHtml);
-                    }
-                    $mpdf->AddPage();
-                    $mpdf->WriteHTML($solvenciaHtml);
-    
-                    $pdfFile = $alumno->codigo . '.pdf';
-                    $pdfFilePath = $pdfDir . $pdfFile;
-                    $mpdf->Output($pdfFilePath, 'F');
-    
-                    $pdfFiles[] = $pdfFilePath;
-
-
-                        // Guardar el nombre del archivo en la tabla archivos
-                        $archivo = new TblArchivos();
-                        $archivo->nombre_archivo = $pdfFile;
-                        $archivo->fk_institucionArchivo= $idInstitucion;
-        
-            
-                        if ($archivo->save()) {
-                            $idArchivo = $archivo->id_archivo;
-
-                                $expediente = new TblExpediente();
-                                $expediente->fk_alumnoExpediente = $alumno->id_alumno;
-                                $expediente->fk_tipoExpediente = 4;
-                                $expediente->fk_archivo = $idArchivo;
-            
-                                if (!$expediente->save()) {
-                                    Yii::error("Error al guardar el expediente para el alumno ID $alumno->id_alumno: " . json_encode($expediente->errors));
-                                }
-                            }
-                            $proyectoId = TblProyecto::findOne($datosAdicionales['proyectoId']);
-                                if($proyectoId){
-                                    $proyectoId->fk_estado_proyecto=4;
-                                }
-                    
-                            $alumnoId = TblAlumno::findOne($alumno->id_alumno);
-                            if ($alumnoId) {
-                                $alumno->fk_estado_alumno = 4;
-                                if (!$alumno->save()) {
-                                    Yii::error("Error al actualizar el estado del alumno ID $alumno->id_alumno: " . json_encode($alumno->errors));
-                                }
-                            } else {
-                                Yii::error("No se encontró el alumno con ID $alumno->id_alumno");
-                            } 
-
                 }
     
-                // Combinar los PDFs individuales en uno solo usando FPDI
-                $pdf = new Fpdi();
-                foreach ($pdfFiles as $pdfFile) {
-                    $pageCount = $pdf->setSourceFile($pdfFile);
-                    for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                        $templateId = $pdf->importPage($pageNo);
-                        $size = $pdf->getTemplateSize($templateId);
-                        $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                        $pdf->useTemplate($templateId);
-                    }
-                }
+                $data = [
+                    'fecha' => $fecha,
+                    'fromDate' => $formattedFromDate,
+                    'toDate' => $formattedToDate,
+                    'fromDate2' => $formattedFromDate2,
+                    'toDate2' => $formattedToDate2,
+                    'genero' => $estudiante['gender'],
+                    'titulo' => $estudiante['titulo'],
+                    'alumno' => $alumno,
+                    'nombreFormateado' => $nombreFormateado,
+                    'nombreFormateado2' => $nombreFormateado2,
+                    'institucion' => $institucion,
+                    'institucion2' => $institucion2,
+                    'datosAdicionales' => $datosAdicionales,
+                    'actividades' => $actividades,
+                    'actividades2' => $actividades2,
+                    'director' => $director,
+                    'coordinador' => $coordinador,
+                    'colaborador' => $colaborador,
+                    'nombreFormateadoEstudiante' => $nombreFormateadoEstudiante
+                ];
     
-                // Guardar el PDF combinado
-                $pdf->Output($combinedPdfFilePath, 'F');
-    
-                if (!empty($pdfFiles)) {
-                    return [
-                        'success' => true,
-                        'message' => 'PDFs generados y combinados exitosamente',
-                        'combinedPdfUrl' => Yii::$app->request->baseUrl . '/archivos/Constancia-Solvencia.pdf',
-                        'pdfFiles' => $pdfFiles,
-                    ];
+                if ($alumno->fkCarrera->fkFacultad->id_facultad == 2) {
+                    $constanciaSaludHtml = $this->renderPartial('constanciasalud', $data);
                 } else {
-                    throw new \Exception('No se pudieron generar los PDFs');
+                    $constanciaHtml = $this->renderPartial('constancia', $data);
                 }
+    
+                $juntaHtml = $this->renderPartial('junta', $data);
+                $solvenciaHtml = $this->renderPartial('solvencia', $data);
+    
+                // Instancia de mPDF para constancia.
+                $mpdf = $this->createMpdf();
+    
+                if ($alumno->fkCarrera->fkFacultad->id_facultad == 2) {
+                    $mpdf->WriteHTML($constanciaSaludHtml);
+                    $mpdf->AddPage();
+                    $mpdf->WriteHTML($constanciaSaludHtml);
+                } else {
+                    $mpdf->WriteHTML($constanciaHtml);
+                    $mpdf->AddPage();
+                    $mpdf->WriteHTML($constanciaHtml);
+                }
+    
+                if ($alumno->fkCarrera->id_carrera == 33 || $alumno->fkCarrera->id_carrera == 56) {
+                    $mpdf->AddPage();
+                    $mpdf->WriteHTML($juntaHtml);
+                }
+    
+                $mpdf->AddPage();
+                $mpdf->WriteHTML($solvenciaHtml);
+    
+                $pdfFile = $alumno->codigo . '.pdf';
+                $pdfFilePath = $pdfDir . $pdfFile;
+                $mpdf->Output($pdfFilePath, 'F');
+    
+                $pdfFiles[] = $pdfFilePath;
+    
+                $archivo = new TblArchivos();
+                $archivo->nombre_archivo = $pdfFile;
+                $archivo->fk_institucionArchivo = $idInstitucion;
+    
+                if ($archivo->save()) {
+                    $idArchivo = $archivo->id_archivo;
+                    $expediente = new TblExpediente();
+                    $expediente->fk_alumnoExpediente = $alumno->id_alumno;
+                    $expediente->fk_tipoExpediente = 4;
+                    $expediente->fk_archivo = $idArchivo;
+    
+                    if (!$expediente->save()) {
+                        Yii::error("Error al guardar el expediente para el alumno ID $alumno->id_alumno: " . json_encode($expediente->errors));
+                    }
+                }
+    
+                $proyecto = TblProyecto::findOne($datosAdicionales['proyectoId']);
+                if ($proyecto) {
+                    $proyecto->fk_estado_proyecto = 4;
+                    $proyecto->save();
+                }
+    
+                $alumno->fk_estado_alumno = 4;
+                if (!$alumno->save()) {
+                    Yii::error("Error al actualizar el estado del alumno ID $alumno->id_alumno: " . json_encode($alumno->errors));
+                }
+            }
+    
+            // Combinar los PDFs individuales en uno solo
+            $this->combinePdfs($pdfFiles, $combinedPdfFilePath);
+    
+            if (!empty($pdfFiles)) {
+                return [
+                    'success' => true,
+                    'message' => 'PDFs generados y combinados exitosamente',
+                    'combinedPdfUrl' => Yii::$app->request->baseUrl . '/archivos/Constancia-Solvencia.pdf',
+                    'pdfFiles' => $pdfFiles,
+                ];
             } else {
-                throw new \Exception('Solicitud inválida');
+                throw new \Exception('No se pudieron generar los PDFs');
             }
         } catch (\Exception $e) {
             Yii::error('Error en actionConstancia: ' . $e->getMessage() . "\n" . $e->getTraceAsString(), __METHOD__);
             return [
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage() . ' ' . $e->getTraceAsString(),
+                'message' => 'Error: ' . $e->getMessage(),
             ];
         }
     }
+    
+    /**
+     * Obtiene el nombre del proyecto y otros detalles para un alumno.
+     */
     public function actionProjectName($idAlumno)
     {
         $pivotes = TblPivote::find()->where(['fk_alumno' => $idAlumno])->all();
         if (count($pivotes) > 0) {
-            $proyectoPrincipal = null;
-            $proyectoSecundario = null;
-            if (isset($pivotes[0])) {
-                $proyectoPrincipal = TblProyecto::findOne($pivotes[0]->fk_proyecto);
-                $alumno=TblAlumno::findOne($idAlumno);
-                $carreraPs = $alumno->fkCarrera->id_carrera;
-            }
-            if (isset($pivotes[1])) {
-                $proyectoSecundario = TblProyecto::findOne($pivotes[1]->fk_proyecto);
-            }
-           
-    
+            $proyectoPrincipal = isset($pivotes[0]) ? TblProyecto::findOne($pivotes[0]->fk_proyecto) : null;
+            $proyectoSecundario = isset($pivotes[1]) ? TblProyecto::findOne($pivotes[1]->fk_proyecto) : null;
             if ($proyectoPrincipal) {
                 $institucionId = $proyectoPrincipal->fkInstitucion->id_institucion;
                 $nombreFormateado = $this->formatInstitutionName($proyectoPrincipal->nombre_proyecto);
-                
+                $alumno = TblAlumno::findOne($idAlumno);
+                $carreraPs = $alumno ? $alumno->fkCarrera->id_carrera : null;
     
                 $otrosAlumnos = TblPivote::find()
                     ->where(['fk_proyecto' => $pivotes[0]->fk_proyecto])
@@ -567,7 +475,6 @@ class CartaController extends BaseController
                 foreach ($otrosAlumnos as $otroAlumno) {
                     $alumnosIds[] = $otroAlumno->fk_alumno;
                 }
-                $proyectoId=$proyectoPrincipal->id_proyecto;
     
                 $response = [
                     'success' => true,
@@ -575,7 +482,7 @@ class CartaController extends BaseController
                     'institucion_id' => $institucionId,
                     'carreraPs' => $carreraPs,
                     'otros_alumnos' => $alumnosIds,
-                    'proyectoId'=> $proyectoId
+                    'proyectoId' => $proyectoPrincipal->id_proyecto,
                 ];
     
                 if ($proyectoSecundario) {
@@ -588,41 +495,120 @@ class CartaController extends BaseController
         }
         return json_encode(['success' => false]);
     }
-    public function formatearNombre($nombreCompleto, &$cambioRealizado = false) {
-        // Obtener todas las correcciones de la base de datos
+    
+    /**
+     * Aplica correcciones al nombre completo del estudiante.
+     */
+    public function formatearNombre($nombreCompleto, &$cambioRealizado = false)
+    {
         $correcciones = TblNames::find()->all();
-    
-        // Dividir el nombre completo en partes individuales (nombres y apellidos)
         $partesNombre = explode(' ', $nombreCompleto);
-    
-        // Variable para rastrear si se realizó algún cambio
         $cambioRealizado = false;
     
-        // Recorrer cada parte del nombre y aplicar correcciones
         foreach ($partesNombre as &$parte) {
-            // Eliminar el punto al final del nombre (si existe)
             $parte = rtrim($parte, '.');
-    
-            // Guardar la parte original para comparar después
             $parteOriginal = $parte;
     
-            // Comparar la parte del nombre con la versión sin tildes (baseform)
             foreach ($correcciones as $correccion) {
                 if (mb_strtolower($parte) === mb_strtolower($correccion->baseform)) {
-                    // Reemplazar con la versión con tildes (accentsnames)
                     $parte = $correccion->accentsnames;
-                    // Si la parte cambió, marcar que hubo un cambio
                     if ($parte !== $parteOriginal) {
                         $cambioRealizado = true;
                     }
-                    break; // Si encontramos una coincidencia, salimos del bucle
+                    break;
                 }
             }
         }
     
-        // Unir las partes corregidas para formar el nombre completo
-        $nombreCorregido = implode(' ', $partesNombre);
+        return implode(' ', $partesNombre);
+    }
     
-        return $nombreCorregido;
+    /**
+     * Formatea el nombre de la institución preservando excepciones y palabras en minúscula.
+     */
+    private function formatInstitutionName($name)
+    {
+        $lowercaseWords = ['la', 'los', 'que', 'lo', 'de', 'del', 'al', 'y', 'a', 'el', 'las', 'en', 'con', 'por', 'para'];
+        $exceptions = ['El Salvador', 'FUNDAGEO','La Presita', 'La Unión', 'SOS', 'La Trinidad', 'USAID', 'El Niño', 'ADESCO', 'El Milagro', 'UNIVO', 'INN', 'El Rosario', 'Las Marias', 'El Zamorán', 'ES0867', 'FULSAMO', 'ES0841', 'La Sincuya', 'S.A', 'C.V'];
+        $exceptionPlaceholders = [];
+    
+        foreach ($exceptions as $index => $exception) {
+            if (stripos($name, $exception) !== false) {
+                $placeholder = "__EXCEPTION_{$index}__";
+                $exceptionPlaceholders[$placeholder] = $exception;
+                $name = str_ireplace($exception, $placeholder, $name);
+            }
+        }
+    
+        preg_match_all('/\((.*?)\)/', $name, $matches);
+        $parts = preg_split('/(\(.*?\))/', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
+    
+        foreach ($parts as &$part) {
+            if (preg_match('/^\(.*?\)$/', $part)) {
+                continue;
+            }
+            
+            $words = preg_split('/(\W+)/u', $part, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            foreach ($words as &$word) {
+                if (array_key_exists($word, $exceptionPlaceholders)) {
+                    $word = $exceptionPlaceholders[$word];
+                } elseif (!in_array(mb_strtolower($word, 'UTF-8'), $lowercaseWords)) {
+                    $word = mb_convert_case($word, MB_CASE_TITLE, 'UTF-8');
+                } else {
+                    $word = mb_strtolower($word, 'UTF-8');
+                }
+            }
+            $part = implode('', $words);
+        }
+    
+        $formattedName = implode('', $parts);
+    
+        foreach ($exceptionPlaceholders as $placeholder => $exception) {
+            $formattedName = str_replace($placeholder, $exception, $formattedName);
+        }
+    
+        return trim($formattedName);
+    }
+    
+    /**
+     * Crea una instancia de Mpdf con la configuración base y permite sobrescribir con opciones adicionales.
+     */
+    private function createMpdf($overrides = [])
+    {
+        $config = [
+            'mode' => 'utf-8',
+            'format' => 'Letter',
+            'fontDir' => ['C:/xampp/htdocs/ServicioSocialUnivo/views/carta/fonts'],
+            'fontdata' => [
+                'arial' => [
+                    'R' => 'arial.ttf',
+                    'B' => 'arialbd.ttf',
+                    'I' => 'ariali.ttf',
+                    'BI' => 'arialbi.ttf',
+                ]
+            ],
+            'default_font' => 'arial',
+        ];
+    
+        $config = array_merge($config, $overrides);
+        return new Mpdf($config);
+    }
+    
+    /**
+     * Combina múltiples PDFs en un solo archivo usando FPDI.
+     */
+    private function combinePdfs(array $pdfFiles, $destination)
+    {
+        $pdf = new Fpdi();
+        foreach ($pdfFiles as $file) {
+            $pageCount = $pdf->setSourceFile($file);
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $templateId = $pdf->importPage($pageNo);
+                $size = $pdf->getTemplateSize($templateId);
+                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                $pdf->useTemplate($templateId);
+            }
+        }
+        $pdf->Output($destination, 'F');
     }
 }
