@@ -135,8 +135,8 @@ class SiteController extends Controller
     }
     public function actionRegisterUser()
     {
-        $email = ''; 
-        $password = '';
+        $email = 'invitado@sse.com'; 
+        $password = 'ServicioSocial2024';
     
         $user = new User();
         $user->email = $email;
