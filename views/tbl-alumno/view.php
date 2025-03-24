@@ -85,12 +85,12 @@ foreach ($pivotRecords as $record) {
     <?php if ($casoSuspension): ?>
             <div class="alert alert-danger" role="alert" style="font-weight: bold;">
                 ⚠️ Suspendido: <?= htmlspecialchars($casoSuspension->caso_descripcion) ?>
-            </div>
+                <small style="position: absolute; right: 10px; top: 5px; font-weight: normal;">
+            <?= date('d/m/Y H:i', strtotime($casoSuspension->create_at)) ?>
+        </small>            </div>
         <?php endif; ?>
         <div class="col-md-6">
             
-
-
 
             <div class="detail-view">
                 <?= DetailView::widget([
