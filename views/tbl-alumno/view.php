@@ -82,7 +82,16 @@ foreach ($pivotRecords as $record) {
     </p>
 
     <div class="row">
+    <?php if ($casoSuspension): ?>
+            <div class="alert alert-danger" role="alert" style="font-weight: bold;">
+                ⚠️ Suspendido: <?= htmlspecialchars($casoSuspension->caso_descripcion) ?>
+            </div>
+        <?php endif; ?>
         <div class="col-md-6">
+            
+
+
+
             <div class="detail-view">
                 <?= DetailView::widget([
                     'model' => $model,

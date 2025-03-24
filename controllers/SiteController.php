@@ -144,8 +144,8 @@ class SiteController extends Controller
         $user->auth_key = Yii::$app->security->generateRandomString(); // Genera un valor para auth_key
     
         // Configura las fechas de creación y actualización
-        $user->created_at = time(); // Establece la fecha actual como timestamp
-        $user->updated_at = time(); // Establece la fecha actual como timestamp
+        $user->created_at = time(); 
+        $user->updated_at = time(); 
     
         if ($user->save()) {
             echo "Usuario registrado exitosamente.";

@@ -2,10 +2,11 @@
 
 namespace app\controllers;
 
+use Yii;
 use app\models\TblAlumno;
 use app\models\TblAlumnoSearch;
 use app\models\TblExpediente;
-
+use app\models\TblCasosSuspencion;
 use app\models\TblDepartamentos;
 use app\models\TblDias;
 use app\models\TblDistritos;
@@ -78,7 +79,8 @@ class TblAlumnoController extends BaseController
         $expedientes = TblExpediente::find()
             ->where(['fk_alumnoExpediente' => $id_alumno])
             ->all();
-    
+        $casoSuspension = TblCasossuspencion::find()->where(['fk_casoAlumno' => $id_alumno])->one();
+
         // Organiza los expedientes por tipo
         $expedientesPorTipo = [];
         foreach ($expedientes as $expediente) {
@@ -102,6 +104,7 @@ class TblAlumnoController extends BaseController
             'expedientesPorTipo' => $expedientesPorTipo,
             'f1Model' => $f1Model, // Enviar el modelo a la vista
             'pivotRecords' => $pivotRecords,
+            'casoSuspension' => $casoSuspension,
         ]);
     }
     
@@ -179,16 +182,38 @@ class TblAlumnoController extends BaseController
     {
         $model = $this->findModel($id_alumno);
         $model->scenario = TblAlumno::SCENARIO_UPDATE;
-
-
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id_alumno' => $model->id_alumno]);
+    
+        $casoSuspension = TblCasosSuspencion::findOne(['fk_casoAlumno' => $id_alumno]);
+        if (!$casoSuspension) {
+            $casoSuspension = new TblCasosSuspencion();
+            $casoSuspension->fk_casoAlumno = $id_alumno;
         }
-
+    
+        if ($this->request->isPost) {
+            $postData = $this->request->post();
+    
+            $model->load($postData);
+            $casoSuspension->load($postData);
+    
+            $transaction = Yii::$app->db->beginTransaction();
+            try {
+                if ($model->save() && $casoSuspension->save()) {
+                    $transaction->commit();
+                    return $this->redirect(['view', 'id_alumno' => $model->id_alumno]);
+                } else {
+                    $transaction->rollBack();
+                }
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                Yii::error($e->getMessage(), __METHOD__);
+            }
+        }
+    
         return $this->render('update', [
             'model' => $model,
+            'casoSuspension' => $casoSuspension, 
         ]);
-    }
+    }   
 
     /**
      * Deletes an existing TblAlumno model.

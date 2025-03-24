@@ -22,37 +22,46 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
         <!-- Primera columna -->
         <div class="col-md-6">
 
-    <?= $form->field($model, 'nombre_alumno')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'nombre_alumno')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'codigo')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'codigo')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'telefono')->textInput(['maxlength' => true]) ?>
+            <?= $form->field($model, 'telefono')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'correo')->textInput(['maxlength' => true]) ?>
-    </div>
+            <?= $form->field($model, 'correo')->textInput(['maxlength' => true]) ?>
+        </div>
         
         <!-- Segunda columna -->
         <div class="col-md-6">
 
-        <?= $form->field($model, 'fk_carrera')->dropDownList(
-    ArrayHelper::map(TblCarrera::find()->all(), 'id_carrera', 'nombre_carrera'),
-    [
-        'prompt' => 'Seleccione...',
-        'class' => 'form-control tom-select-carrera' // Clase personalizada para Tom Select
-    ]
-) ?>
-
-    <?= $form->field($model, 'fk_estado_alumno')->dropDownList(
-                ArrayHelper::map(TblEstadoAlumno::find()->all(), 'id_estado_alumno', 'estado_alumno'),
-                ['prompt' => 'Seleccione...']
+            <?= $form->field($model, 'fk_carrera')->dropDownList(
+                ArrayHelper::map(TblCarrera::find()->all(), 'id_carrera', 'nombre_carrera'),
+                [
+                    'prompt' => 'Seleccione...',
+                    'class' => 'form-control tom-select-carrera' 
+                ]
             ) ?>
-        <?= $form->field($model, 'numero_materias')->input('number', ['min' => 0, 'max' => 50])->label('Cantidad de Materias Aprobadas') ?>
+
+            <?= $form->field($model, 'fk_estado_alumno')->dropDownList(
+                        ArrayHelper::map(TblEstadoAlumno::find()->all(), 'id_estado_alumno', 'estado_alumno'),
+                        [
+                            'prompt' => 'Seleccione...',
+                            'id' => 'estado-alumno'
+                        ]
+            ) ?>
+                <?= $form->field($casoSuspension, 'caso_descripcion')->textarea([
+                    'id' => 'caso_descripcion-text',
+                    'rows' => 3
+                ]) ?>
+
+
+                <?= $form->field($model, 'numero_materias')->input('number', ['min' => 0, 'max' => 50])->label('Cantidad de Materias Aprobadas') ?>
         </div>
     </div>
 
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-    </div>
+        <div class="form-group">
+            <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+        </div>
 
     <?php ActiveForm::end(); ?>
 
@@ -70,4 +79,20 @@ $this->registerJs("
         dropdownParent: 'body',
     });
 ");
+?>
+
+<?php
+$script = <<< JS
+$(document).ready(function(){
+    $('#estado-alumno').change(function(){
+        if($(this).val() == 3){
+            $('#caso_descripcion-container').show();
+        } else {
+            $('#caso_descripcion-container').hide();
+            $('#caso_descripcion-text').val('');
+        }
+    });
+});
+JS;
+$this->registerJs($script);
 ?>
