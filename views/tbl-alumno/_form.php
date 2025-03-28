@@ -49,10 +49,15 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                             'id' => 'estado-alumno'
                         ]
             ) ?>
-                <?= $form->field($casoSuspension, 'caso_descripcion')->textarea([
-                    'id' => 'caso_descripcion-text',
-                    'rows' => 3
-                ]) ?>
+
+            <?= $form->field($casoSuspension, 'caso_descripcion', [
+                'options' => ['id' => 'caso_descripcion-container', 'style' => 'display: none;']
+            ])->textarea([
+                'id' => 'caso_descripcion-text',
+                'rows' => 3
+            ]) ?>
+
+
 
 
                 <?= $form->field($model, 'numero_materias')->input('number', ['min' => 0, 'max' => 50])->label('Cantidad de Materias Aprobadas') ?>
@@ -79,20 +84,23 @@ $this->registerJs("
         dropdownParent: 'body',
     });
 ");
-?>
-
-<?php
 $script = <<< JS
 $(document).ready(function(){
-    $('#estado-alumno').change(function(){
-        if($(this).val() == 3){
+    function toggleCasoDescripcion() {
+        if($('#estado-alumno').val() == '3'){
             $('#caso_descripcion-container').show();
         } else {
             $('#caso_descripcion-container').hide();
-            $('#caso_descripcion-text').val('');
+            $('#caso_descripcion-text').val(''); 
         }
+    }
+
+    toggleCasoDescripcion();
+
+    $('#estado-alumno').change(function(){
+        toggleCasoDescripcion();
     });
 });
 JS;
 $this->registerJs($script);
-?>
+
