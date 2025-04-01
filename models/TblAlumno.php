@@ -103,6 +103,12 @@ class TblAlumno extends \yii\db\ActiveRecord
         return $this->hasOne(TblCarrera::class, ['id_carrera' => 'fk_carrera']);
     }
 
+    public function getFkFacultad()
+    {
+        return $this->hasOne(TblFacultad::className(), ['id_facultad' => 'fk_facultad'])
+                    ->via('fkCarrera');
+    }
+
     /**
      * Gets query for [[FkEstadoAlumno]].
      *

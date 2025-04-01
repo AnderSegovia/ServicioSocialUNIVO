@@ -15,7 +15,6 @@ use app\models\TblCarrera;
                 'label' => 'Alumno',
                 'format' => 'raw',
                 'value' => function($model) {
-                    // Genera un enlace al perfil del alumno utilizando solo el nombre
                     return Html::a(
                         $model['nombre_alumno'],
                         ['tbl-alumno/view', 'id_alumno' => $model['fk_alumnoExpediente']]
@@ -30,11 +29,21 @@ use app\models\TblCarrera;
                 'label' => 'Carrera',
                 'format' => 'raw',
                 'value' => function($model) {
-                    // Accede a la relación de la carrera a través del modelo del alumno
                     $alumno = \app\models\TblAlumno::findOne($model['fk_alumnoExpediente']);
                     return $alumno ? $alumno->fkCarrera->nombre_carrera : 'Sin carrera';
                 }
             ],
+            [
+                'attribute' => 'fk_facultad',
+                'label' => 'Facultad',
+                'value' => function ($model) {
+                    $alumno = TblAlumno::findOne($model['fk_alumnoExpediente']);
+                    return $alumno && $alumno->fkCarrera && $alumno->fkCarrera->fkFacultad
+                        ? $alumno->fkCarrera->fkFacultad->nombre_facultad
+                        : 'No definido';
+                },
+                'filter' => ArrayHelper::map(TblFacultad::find()->all(), 'id_facultad', 'nombre_facultad'),
+            ]
             [
                 'attribute' => 'fecha_creado',
                 'label' => 'Fecha Creado'

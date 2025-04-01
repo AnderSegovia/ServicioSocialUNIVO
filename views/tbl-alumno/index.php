@@ -3,6 +3,8 @@
 use app\assets\AppAsset;
 use app\models\TblAlumno;
 use app\models\TblCarrera;
+use app\models\TblFacultad;
+
 use app\models\TblEstadoAlumno;
 use yii\bootstrap5\LinkPager;
 use yii\helpers\Html;
@@ -48,6 +50,16 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
             'codigo',
             'telefono',
             //'correo',
+            [
+                'attribute' => 'fk_facultad',
+                'label' => '-------Facultad ------',
+                'value' => function ($model) {
+                    return $model->fkCarrera && $model->fkCarrera->fkFacultad
+                        ? $model->fkCarrera->fkFacultad->nombre_facultad
+                        : 'No definido';
+                },
+                'filter' => ArrayHelper::map(TblFacultad::find()->all(), 'id_facultad', 'nombre_facultad'),
+            ],
             [
                 'attribute' => 'fk_carrera',
                 'label' => 'Carrera',

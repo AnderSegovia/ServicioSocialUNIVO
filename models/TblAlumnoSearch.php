@@ -11,13 +11,15 @@ use app\models\TblAlumno;
  */
 class TblAlumnoSearch extends TblAlumno
 {
+    public $fk_facultad;
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id_alumno', 'fk_carrera', 'fk_estado_alumno','numero_materias'], 'integer'],
+            [['id_alumno', 'fk_carrera','fk_facultad', 'fk_estado_alumno','numero_materias'], 'integer'],
             [['nombre_alumno', 'codigo', 'telefono', 'correo'], 'safe'],
         ];
     }
@@ -41,6 +43,8 @@ class TblAlumnoSearch extends TblAlumno
     public function search($params)
     {
         $query = TblAlumno::find();
+        $query->joinWith(['fkCarrera fkCarrera', 'fkCarrera.fkFacultad fkFacultad']);
+
 
         // add conditions that should always apply here
 
@@ -62,6 +66,7 @@ class TblAlumnoSearch extends TblAlumno
             'fk_carrera' => $this->fk_carrera,
             'fk_estado_alumno' => $this->fk_estado_alumno,
         ]);
+        $query->andFilterWhere(['fkFacultad.id_facultad' => $this->fk_facultad]);
 
         $query->andFilterWhere(['like', 'nombre_alumno', $this->nombre_alumno])
             ->andFilterWhere(['like', 'codigo', $this->codigo])

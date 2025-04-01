@@ -100,23 +100,23 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom
                             },
                             'filter' => ArrayHelper::map(TblFacultad::find()->all(), 'id_facultad', 'nombre_facultad'),
                         ],
-            [
-                'attribute' => 'fk_carrera_proyecto',
-                'label' => 'Carrera',
-                'value' => function ($model) {
-                    return $model->fkCarreraProyecto ? $model->fkCarreraProyecto->nombre_carrera : 'No definido';
-                },
-                    'filter' => Html::activeDropDownList(
-                        $searchModel,
-                        'fk_carrera_proyecto',
-                        ArrayHelper::map(TblCarrera::find()->all(), 'id_carrera', 'nombre_carrera'),
                         [
-                            'class' => 'form-control tom-select',
-                            'id' => 'carrera-select',
-                            'prompt' => 'Seleccione...',
-                        ]   
-                    ),
-                ],
+                            'attribute' => 'fk_carrera_proyecto',
+                            'label' => 'Carrera',
+                            'value' => function ($model) {
+                                return $model->fkCarreraProyecto ? $model->fkCarreraProyecto->nombre_carrera : 'No definido';
+                            },
+                                'filter' => Html::activeDropDownList(
+                                    $searchModel,
+                                    'fk_carrera_proyecto',
+                                    ArrayHelper::map(TblCarrera::find()->all(), 'id_carrera', 'nombre_carrera'),
+                                    [
+                                        'class' => 'form-control tom-select',
+                                        'id' => 'carrera-select',
+                                        'prompt' => 'Seleccione...',
+                                    ]   
+                                ),
+                            ],
          /*       [
                 'attribute' => 'fk_lineamiento',
                 'label' => 'Linea',
