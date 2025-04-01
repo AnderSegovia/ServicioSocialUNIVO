@@ -74,19 +74,15 @@
         <div style="display: flex; justify-content: space-between;">
             <div style="text-align: right;">
                 <?php
-                // Obtener la fecha actual
                 $fecha = date('Y-m-d');
 
-                // Obtener componentes de la fecha
                 list($anio, $mes, $dia) = explode('-', $fecha);
 
-                // Array de meses en español
                 $meses = [
                     1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
                     7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
                 ];
 
-                // Imprimir la fecha en el formato deseado
                 echo $meses[(int)$mes] . " $dia" . ", $anio";
                 ?>
             </div>
