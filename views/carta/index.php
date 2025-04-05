@@ -73,24 +73,24 @@ $form = ActiveForm::begin([
 <!-- Botones para enviar los datos de la tabla -->
 <div class="form-group">
     <div class="row">
-    <div class="col-md-2">
-    <?= Html::submitButton('Generar Carta', ['class' => 'btn btn-primary', 'id' => 'btn-generar-carta', 'disabled' => true]) ?>
-    </div>
-    <div class="col-md-4">
-        <!-- Subir Plan -->
-        <?= Html::button('Subir Plan', ['class' => 'btn btn-primary', 'id' => 'btn-upload-plan', 'disabled' => true]) ?>
-        <?= $form->field($model, 'pdfFile1')->fileInput(['id' => 'pdf-file-1', 'disabled' => true])->label(false) ?>
-    </div>
-    <div class="col-md-4">
-        <!-- Subir Memoria -->
-        <?= Html::button('Subir Memoria', ['class' => 'btn btn-primary', 'id' => 'btn-upload-memoria', 'disabled' => true]) ?>
-        <?= $form->field($model, 'pdfFile2')->fileInput(['id' => 'pdf-file-2', 'disabled' => true])->label(false) ?>
-    </div>
-    <div class="col-md-2">
-    <?= Html::button('Constancia', ['class' => 'btn btn-primary', 'id' => 'btn-abrir-modal', 'disabled' => true]) ?>
+        <div class="col-md-2">
+            <?= Html::submitButton('Generar Carta', ['class' => 'btn btn-primary', 'id' => 'btn-generar-carta', 'disabled' => true]) ?>
+            </div>
+            <div class="col-md-4">
+                <!-- Subir Plan -->
+                <?= Html::button('Subir Plan', ['class' => 'btn btn-primary', 'id' => 'btn-upload-plan', 'disabled' => true]) ?>
+                <?= $form->field($model, 'pdfFile1')->fileInput(['id' => 'pdf-file-1', 'disabled' => true])->label(false) ?>
+            </div>
+            <div class="col-md-4">
+                <!-- Subir Memoria -->
+                <?= Html::button('Subir Memoria', ['class' => 'btn btn-primary', 'id' => 'btn-upload-memoria', 'disabled' => true]) ?>
+                <?= $form->field($model, 'pdfFile2')->fileInput(['id' => 'pdf-file-2', 'disabled' => true])->label(false) ?>
+            </div>
+            <div class="col-md-2">
+            <?= Html::button('Constancia', ['class' => 'btn btn-primary', 'id' => 'btn-abrir-modal', 'disabled' => true]) ?>
 
         </div>
-</div>
+    </div>
 </div>
 
 

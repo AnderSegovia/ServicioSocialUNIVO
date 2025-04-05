@@ -141,16 +141,14 @@ class SiteController extends Controller
         $user = new User();
         $user->email = $email;
         $user->password_hash = Yii::$app->security->generatePasswordHash($password);
-        $user->auth_key = Yii::$app->security->generateRandomString(); // Genera un valor para auth_key
+        $user->auth_key = Yii::$app->security->generateRandomString();
     
-        // Configura las fechas de creación y actualización
         $user->created_at = time(); 
         $user->updated_at = time(); 
     
         if ($user->save()) {
             echo "Usuario registrado exitosamente.";
         } else {
-            // Formatear los errores para mostrarlos como una cadena
             $errors = [];
             foreach ($user->errors as $attributeErrors) {
                 foreach ($attributeErrors as $error) {
