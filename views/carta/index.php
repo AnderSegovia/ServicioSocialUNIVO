@@ -188,59 +188,49 @@ $form = ActiveForm::begin([
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
  document.getElementById('btn-agregar').addEventListener('click', function() {
-    // Crear un contenedor para los inputs
     var inputGroup = document.createElement('div');
-    inputGroup.className = 'input-group'; // Añadir la clase 'input-group' para seleccionar fácilmente
+    inputGroup.className = 'input-group';
     inputGroup.style.display = 'flex';
     inputGroup.style.gap = '10px';
 
-    // Crear el nuevo input de texto
     var newTextInput = document.createElement('input');
     newTextInput.type = 'text';
     newTextInput.className = 'form-control';
     newTextInput.name = 'junta[]';
     newTextInput.style.flex = '1';
 
-    // Crear el nuevo input numérico
     var newNumberInput = document.createElement('input');
     newNumberInput.type = 'number';
     newNumberInput.className = 'form-control';
     newNumberInput.name = 'horas[]';
     newNumberInput.style.flex = '1';
 
-    // Agregar los inputs al contenedor
     inputGroup.appendChild(newTextInput);
     inputGroup.appendChild(newNumberInput);
 
-    // Agregar el contenedor de inputs al contenedor principal
     document.getElementById('input-container').appendChild(inputGroup);
  });
     document.getElementById('btn-agregar2').addEventListener('click', function() {
-        // Crear un contenedor para los inputs
         var inputGroup = document.createElement('div');
         inputGroup.className = 'input-group';
         inputGroup.style.display = 'flex';
         inputGroup.style.gap = '10px';
 
-        // Crear el nuevo input de texto
         var newTextInput = document.createElement('input');
         newTextInput.type = 'text';
         newTextInput.className = 'form-control';
         newTextInput.name = 'junta2[]';
         newTextInput.style.flex = '1';
 
-        // Crear el nuevo input numérico
         var newNumberInput = document.createElement('input');
         newNumberInput.type = 'number';
         newNumberInput.className = 'form-control';
         newNumberInput.name = 'horas2[]';
         newNumberInput.style.flex = '1';
 
-        // Agregar los inputs al contenedor
         inputGroup.appendChild(newTextInput);
         inputGroup.appendChild(newNumberInput);
 
-        // Agregar el contenedor de inputs al contenedor principal
         document.getElementById('input-container2').appendChild(inputGroup);
     });
  $(document).ready(function() {
@@ -249,7 +239,6 @@ $form = ActiveForm::begin([
     });
 
     $('#btn-enviar-modal').on('click', function() {
-        // Recopilar datos del formulario del modal
         let formDatosAdicionales = $('#form-datos-adicionales').serializeArray();
         let datosAdicionales = {};
         formDatosAdicionales.forEach(function(field) {
@@ -258,27 +247,22 @@ $form = ActiveForm::begin([
         
         let actividades = [];
     
-    // Recopilar datos de todas las actividades
     document.querySelectorAll('#input-container .input-group').forEach(function(group) {
         let junta = group.querySelector('input[name="junta[]"]').value;
         let horas = group.querySelector('input[name="horas[]"]').value;
         actividades.push({ junta: junta, horas: horas });
     });
 
-    // Verificar que se están recogiendo todas las actividades
     console.log('Actividades:', actividades);
 
-        // Recopilar datos de las actividades de Junta de Vigilancia 2
-        let actividades2 = [];
+    let actividades2 = [];
     
-    // Recopilar datos de todas las actividades
     document.querySelectorAll('#input-container2 .input-group').forEach(function(group) {
         let junta2 = group.querySelector('input[name="junta2[]"]').value;
         let horas2 = group.querySelector('input[name="horas2[]"]').value;
         actividades2.push({ junta2: junta2, horas2: horas2 });
     });
 
-        // Recopilar datos de los estudiantes
         let estudiantes = [];
         $('#tabla-estudiantes tbody tr').each(function() {
             let id = $(this).data('id');
@@ -288,16 +272,12 @@ $form = ActiveForm::begin([
             estudiantes.push({ id: id, gender: gender, titulo: titulo});
         });
 
-        // Recopilar el ID de la institución
         let institucionSeleccionada = $('.tom-select-institucion').val();
         let institucionSeleccionada2 = $('.tom-select-institucions').val();
         if (!institucionSeleccionada2) {
-            // Asignar el valor por defecto
             institucionSeleccionada2 = 1;
         }
 
-
-        // Consolidar todos los datos
         let datos = {
             datosAdicionales: datosAdicionales,
             actividades: actividades,
@@ -307,15 +287,13 @@ $form = ActiveForm::begin([
             idInstitucion2: institucionSeleccionada2
         };
 
-        // Enviar los datos usando AJAX
         $.ajax({
-            url: 'constancia', // Cambia esto por la URL de tu controlador
+            url: 'constancia', 
             type: 'POST',
             data: datos,
             success: function(response) {
                 if (response.success) {
                     console.log(response);
-                    // Abre el primer PDF en una nueva ventana
                     window.open(response.combinedPdfUrl, '_blank');
                     $('#modalDatosAdicionales').modal('hide');
                 } else {
@@ -379,7 +357,6 @@ $form = ActiveForm::begin([
         dropdownParent: 'body',
     });
 
-    //Funcion para verificar que no se dejen datos vacios
     function toggleButtons() {
         let valorCampoNumerico = $('#campo-numerico').val();
         let institucionSeleccionada = $('.tom-select-institucion').val();
@@ -416,24 +393,53 @@ $form = ActiveForm::begin([
         }
 
     }
-
             $('#campo-numerico').on('input', toggleButtons);
             $('.tom-select-institucion').on('change', toggleButtons);
             $('#tabla-estudiantes').on('change', 'select[name="gender"]', toggleButtons);
 
-            // Ejecutar la función de validación inicial para asegurarse de que los botones están en el estado correcto al cargar la página
             $(document).ready(function() {
                 toggleButtons();
             });
 
+            document.getElementById('btn-generar-carta').addEventListener('click', function(event) {
+            event.preventDefault();
 
+            let selectedIds = Object.keys(estudiantesSeleccionados);
+            let idAlumnosValue = selectedIds.join(',');
+            let idInstitucion = document.querySelector('.tom-select-institucion').value;
 
-    // Manejar el evento de clic en el botón Generar Carta
-    document.getElementById('btn-generar-carta').addEventListener('click', function(event) {
-        event.preventDefault(); // Evitar el envío del formulario por defecto
+            if (selectedIds.length === 0) {
+                alert('Debe seleccionar al menos un estudiante.');
+                return;
+            }
 
-        enviarDatos('<?= Yii::$app->urlManager->createUrl(['carta/generar-carta']) ?>');
-    });
+            fetch('<?= Yii::$app->urlManager->createUrl(['carta/verificar-estados']) ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?= Yii::$app->request->getCsrfToken() ?>'
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.estadosInvalidos && data.estadosInvalidos.length > 0) {
+                    const nombres = data.estadosInvalidos.map(e => `${e.nombre} (${e.estado})`).join('\n');
+                    const continuar = confirm(`Los siguientes estudiantes no tienen estado Sin Asignar:\n\n${nombres}\n\n¿Desea continuar de todos modos?`);
+                    if (!continuar) return;
+                }
+
+                const formData = new FormData();
+                formData.append('idAlumnos', idAlumnosValue);
+                formData.append('idInstitucion', idInstitucion);
+
+                enviarDatos('<?= Yii::$app->urlManager->createUrl(['carta/generar-carta']) ?>', formData);
+            })
+            .catch(error => {
+                console.error('Error al verificar estados:', error);
+                alert('Ocurrió un error al verificar los estados.');
+            });
+        });
 
     function enviarDatos(url) {
         let selectedIds = Object.keys(estudiantesSeleccionados);
@@ -441,47 +447,44 @@ $form = ActiveForm::begin([
         let campoNumerico = document.getElementById('campo-numerico').value;
 
         if (selectedIds.length > 0) {
-            // Construir el valor para el parámetro idAlumnos
             let idAlumnosValue = selectedIds.join(',');
 
-            // Construir la URL con los parámetros requeridos
             url += '?idAlumnos=' + encodeURIComponent(idAlumnosValue);
             url += '&idInstitucion=' + encodeURIComponent(idInstitucion);
             url += '&campoNumerico=' + encodeURIComponent(campoNumerico);
 
-            // Redirigir a la URL construida
             window.location.href = url;
         } else {
             alert('Debe agregar al menos un estudiante para continuar.');
         }
     }
-    document.getElementById('btn-upload-plan').addEventListener('click', function(event) {
-    event.preventDefault();
-    document.getElementById('pdf-file-1').click();
-    });
-
-    document.getElementById('btn-upload-memoria').addEventListener('click', function(event) {
+        document.getElementById('btn-upload-plan').addEventListener('click', function(event) {
         event.preventDefault();
-        document.getElementById('pdf-file-2').click();
-    });
+        document.getElementById('pdf-file-1').click();
+        });
 
-    document.getElementById('pdf-file-1').addEventListener('change', function() {
-        var file = this.files[0];
-        subirArchivo(file, 2); // 2 para tipo plan
-    });
+        document.getElementById('btn-upload-memoria').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('pdf-file-2').click();
+        });
 
-    document.getElementById('pdf-file-2').addEventListener('change', function() {
-        var file = this.files[0];
-        subirArchivo(file, 3); // 3 para tipo memoria
-    });
+        document.getElementById('pdf-file-1').addEventListener('change', function() {
+            var file = this.files[0];
+            subirArchivo(file, 2); 
+        });
+
+        document.getElementById('pdf-file-2').addEventListener('change', function() {
+            var file = this.files[0];
+            subirArchivo(file, 3); 
+        });
 
     function subirArchivo(file, tipo) {
         var formData = new FormData();
         formData.append('_csrf', '<?= Yii::$app->request->csrfToken ?>');
         formData.append('pdfFile', file);
-        formData.append('tipo', tipo); // tipo (2 para plan, 3 para memoria)
+        formData.append('tipo', tipo); 
 
-        // Obtener los IDs de los estudiantes seleccionados
+       
         let selectedIds = Object.keys(estudiantesSeleccionados);
         let idAlumnosValue = selectedIds.join(',');
 
@@ -510,7 +513,6 @@ $form = ActiveForm::begin([
 
         xhr.send(formData);
     }
-    // Función para filtrar la lista de estudiantes
     function filtrarListaEstudiantes(carrera) {
         let select = document.getElementById('tblalumno-id_alumno');
         let options = select.options;
@@ -528,7 +530,6 @@ $form = ActiveForm::begin([
         }
     }
 
-    // Función para restablecer la lista de estudiantes
     function restablecerListaEstudiantes() {
         let select = document.getElementById('tblalumno-id_alumno');
         let options = select.options;
@@ -538,7 +539,6 @@ $form = ActiveForm::begin([
         }
     }
 
-    // Manejar la eliminación de estudiantes de la tabla
     document.querySelector('#tabla-estudiantes').addEventListener('click', function(event) {
         if (event.target && event.target.classList.contains('btn-quitar')) {
             let row = event.target.closest('tr');
@@ -558,16 +558,11 @@ $form = ActiveForm::begin([
     let texto = select.options[select.selectedIndex].text;
     let nombreCarrera = select.options[select.selectedIndex].getAttribute('data-carrera-nombre');
 
-    // Verificar que se haya seleccionado un estudiante y que no esté ya en la lista
     if (id && !estudiantesSeleccionados[id]) {
-        // Consultar la carrera del estudiante seleccionado
-
-        // Agregar estudiante al diccionario
         estudiantesSeleccionados[id] = texto;
 
         console.log('IDs seleccionados:', Object.keys(estudiantesSeleccionados));
 
-        // Añadir fila a la tabla
         let tbody = document.querySelector('#tabla-estudiantes tbody');
         let row = document.createElement('tr');
         row.setAttribute('data-id', id);
@@ -600,11 +595,9 @@ $form = ActiveForm::begin([
         `;
         tbody.appendChild(row);
 
-        // Limpiar la selección del select
         select.value = '';
         select.tomselect.clear();
 
-        // Agregar evento de eliminación a la fila recién creada
         row.querySelector('.btn-quitar').addEventListener('click', function() {
             delete estudiantesSeleccionados[id];
             row.remove();
@@ -615,7 +608,6 @@ $form = ActiveForm::begin([
             toggleButtons();
         });
 
-        // Llamada AJAX para obtener los datos del proyecto
         $.ajax({
             url: 'project-name',
             type: 'GET',
@@ -623,7 +615,6 @@ $form = ActiveForm::begin([
             success: function(response) {
                 var data = JSON.parse(response);
                 if (data.success) {
-                    // Aquí puedes manipular el nombre del proyecto si es necesario
                     console.log('Nombre del Proyecto: ' + data.nombre_proyecto + data.institucion_id);
                     if(data.carreraPs == 33 || data.carreraPs == 56){
                         $('#actividades').show();
@@ -645,14 +636,8 @@ $form = ActiveForm::begin([
                         $('#campo2').val('');
                         $('#institucion2').val('');
                     }
-
-                    // Agregar los demás estudiantes del proyecto a la tabla
-                    data.otros_alumnos.forEach(function(alumnoId) {
-
-                       
+                    data.otros_alumnos.forEach(function(alumnoId) {                       
                 console.log('IDs seleccionados:', alumnoId);
-
-                        // Obtener el texto y carrera del estudiante
                         let option = select.querySelector(`option[value="${alumnoId}"]`);
                         if (option) {
                             let estudianteTexto = option.text;
@@ -689,8 +674,6 @@ $form = ActiveForm::begin([
                                 <td><button class='btn btn-danger btn-quitar'>Quitar</button></td>
                             `;
                             tbody.appendChild(estudianteRow);
-
-                            // Agregar evento de eliminación a la fila recién creada
                             estudianteRow.querySelector('.btn-quitar').addEventListener('click', function() {
                                 delete estudiantesSeleccionados[alumnoId];
                                 estudianteRow.remove();
@@ -715,20 +698,16 @@ $form = ActiveForm::begin([
         toggleButtons();
     }
     });
-
-
-        // Validar antes de enviar el formulario
         document.getElementById('form-seleccion-estudiantes').addEventListener('submit', function(event) {
             if (Object.keys(estudiantesSeleccionados).length === 0) {
                 alert('Debe agregar al menos un estudiante para continuar.');
-                event.preventDefault(); // Evitar el envío del formulario si no hay estudiantes seleccionados
+                event.preventDefault();
             }
         });
     });
 </script>
 
 <script>
-    // Función para mostrar la alerta
     function mostrarAlerta() {
     Swal.fire({
         position: "top-end",
@@ -737,8 +716,7 @@ $form = ActiveForm::begin([
         showConfirmButton: false,
         timer: 1500
     }).then(() => {
-        // This function runs after the Swal timer is completed
-                location.reload();
+        location.reload();
     });
     
     }   

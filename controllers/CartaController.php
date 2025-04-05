@@ -611,4 +611,30 @@ class CartaController extends BaseController
         }
         $pdf->Output($destination, 'F');
     }
+    public function actionVerificarEstados()
+{
+    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+    $data = json_decode(Yii::$app->request->getRawBody(), true);
+    $ids = $data['ids'] ?? [];
+
+    if (empty($ids)) {
+        return ['error' => 'No se enviaron estudiantes'];
+    }
+
+    $estudiantesInvalidos = TblAlumno::find()
+        ->where(['id_alumno' => $ids])
+        ->andWhere(['<>', 'fk_estado_alumno', 5])
+        ->all();
+
+    $estadosInvalidos = array_map(function($estudiante) {
+        return ['id' => $estudiante->id_alumno, 
+        'nombre' => $estudiante->nombre_alumno,
+        'estado' => $estudiante->fkEstadoAlumno->estado_alumno];
+    }, $estudiantesInvalidos);
+
+    return ['estadosInvalidos' => $estadosInvalidos];
+}
+
+
 }
